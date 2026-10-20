@@ -1,17 +1,19 @@
-# match_flash_cards
+# Match Flash Cards
 
-A new Flutter project.
+A matching flashcard study app for kids (Android).
 
-## Getting Started
+- Make decks of words, each with a description and an optional picture.
+- Study by matching: see a word and pick its description, see a description and pick its word, or get a random mix.
+- Every round is shuffled: card order, answer positions and wrong answers.
+- Light gamification: points, streak bonuses, 1-3 stars per round and a best score per deck.
+- Cards can only be edited outside of study mode.
 
-This project is a starting point for a Flutter application.
+See [plan.md](plan.md) for the design.
 
-A few resources to get you started if this is your first Flutter project:
+## Development
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```
+flutter pub get
+flutter run
+flutter test
+```
