@@ -12,6 +12,7 @@ import 'palette.dart';
 import 'results_view.dart';
 import 'widgets/adaptive_text.dart';
 import 'widgets/answer_tile.dart';
+import 'widgets/fade_through.dart';
 import 'widgets/option_content.dart';
 import 'widgets/text_prompt.dart';
 
@@ -77,6 +78,7 @@ class _StudyScreenState extends State<StudyScreen> {
 
   Future<void> _onTap(AnswerOption option) async {
     if (_locked || _wrong.contains(option.key)) return;
+    if (!_session.current.options.any((o) => identical(o, option))) return;
     final l10n = AppLocalizations.of(context);
     final result = _session.answer(option);
 
@@ -195,6 +197,23 @@ class _StudyScreenState extends State<StudyScreen> {
 
   Widget _buildQuestion(BuildContext context) {
     final question = _session.current;
+    return SingleChildScrollView(
+      controller: _scroll,
+      padding: const EdgeInsets.all(16),
+      // The whole question (prompt, verdict and answers) swaps as one piece.
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.topCenter,
+        child: FadeThrough(
+          alignment: Alignment.topCenter,
+          child: _questionBody(context, question),
+        ),
+      ),
+    );
+  }
+
+  Widget _questionBody(BuildContext context, Question question) {
     final theme = Theme.of(context);
     // Text sizes follow the content, so short words are big and sentences fit.
     final promptLength = question.prompt.text.length;
@@ -206,147 +225,103 @@ class _StudyScreenState extends State<StudyScreen> {
       shortLength: 30,
     );
     final answerAlign = adaptiveAlign(answerLength);
-    return SingleChildScrollView(
-      controller: _scroll,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          AnimatedSize(
-            duration: const Duration(milliseconds: 350),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 350),
-              layoutBuilder: (current, previous) => Stack(
-                alignment: Alignment.topCenter,
-                children: [...previous, ?current],
+    return Column(
+      key: ValueKey(question.number),
+      children: [
+        Card(
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: 120),
+            padding: const EdgeInsets.all(24),
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF6C40F5), Color(0xFFD81B60)],
               ),
-              transitionBuilder: (child, animation) => SlideTransition(
-                position: Tween(begin: const Offset(0.3, 0), end: Offset.zero)
-                    .animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutCubic,
-                      ),
-                    ),
-                child: FadeTransition(opacity: animation, child: child),
-              ),
-              child: Card(
-                key: ValueKey(question.number),
-                clipBehavior: Clip.antiAlias,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                child: Container(
-                  width: double.infinity,
-                  constraints: const BoxConstraints(minHeight: 120),
-                  padding: const EdgeInsets.all(24),
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF6C40F5), Color(0xFFD81B60)],
-                    ),
-                  ),
-                  child: OptionContent(
-                    option: question.prompt,
-                    imageHeight: 140,
-                    textAlign: adaptiveAlign(promptLength, centerUpTo: 50),
-                    textStyle: theme.textTheme.headlineMedium?.copyWith(
-                      fontSize: adaptiveFontSize(
-                        promptLength,
-                        max: 30,
-                        min: 19,
-                      ),
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+            ),
+            child: OptionContent(
+              option: question.prompt,
+              imageHeight: 140,
+              textAlign: adaptiveAlign(promptLength, centerUpTo: 50),
+              textStyle: theme.textTheme.headlineMedium?.copyWith(
+                fontSize: adaptiveFontSize(promptLength, max: 30, min: 19),
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 44),
-              alignment: Alignment.center,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                transitionBuilder: (child, animation) => ScaleTransition(
-                  scale: CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.elasticOut,
-                  ),
-                  child: child,
-                ),
-                child: _feedback(theme),
-              ),
-            ),
-          ),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const gap = 12.0;
-              final wide = constraints.maxWidth >= 600;
-              final width = wide
-                  ? (constraints.maxWidth - gap) / 2
-                  : constraints.maxWidth;
-              return Wrap(
-                spacing: gap,
-                runSpacing: gap,
-                children: [
-                  for (final (index, option) in question.options.indexed)
-                    SizedBox(
-                      width: width,
-                      child: AnswerTile(
-                        key: ValueKey('${question.number}-${option.key}'),
-                        option: option,
-                        index: index,
-                        fontSize: answerSize,
-                        textAlign: answerAlign,
-                        color: playfulColor(index),
-                        state: _tileState(option),
-                        onTap: () => _onTap(option),
-                      ),
+        ),
+        // A fixed slot, so the answers never jump when the verdict appears.
+        SizedBox(height: 56, child: Center(child: _feedback(theme))),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const gap = 12.0;
+            final wide = constraints.maxWidth >= 600;
+            final width = wide
+                ? (constraints.maxWidth - gap) / 2
+                : constraints.maxWidth;
+            return Wrap(
+              spacing: gap,
+              runSpacing: gap,
+              children: [
+                for (final (index, option) in question.options.indexed)
+                  SizedBox(
+                    width: width,
+                    child: AnswerTile(
+                      key: ValueKey('${question.number}-${option.key}'),
+                      option: option,
+                      index: index,
+                      fontSize: answerSize,
+                      textAlign: answerAlign,
+                      color: playfulColor(index),
+                      state: _tileState(option),
+                      onTap: () => _onTap(option),
                     ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 
-  /// The line under the question: neutral hint, or a green/red verdict.
+  /// The pill under the question. One pill that changes color and wording,
+  /// instead of pills that replace each other.
   Widget _feedback(ThemeData theme) {
     final message = _message;
-    if (message == null) {
-      return Text(
-        AppLocalizations.of(context).whichMatches,
-        key: const ValueKey('hint'),
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
-      );
-    }
-    final color = _messageIsCorrect
-        ? Colors.green.shade800
-        : Colors.red.shade800;
-    return Container(
-      key: ValueKey('$message-$_messageIsCorrect-${_wrong.length}'),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+    final hasVerdict = message != null;
+    final color = !hasVerdict
+        ? Colors.transparent
+        : (_messageIsCorrect ? Colors.green.shade800 : Colors.red.shade800);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
       ),
-      child: Text(
-        message,
-        style: theme.textTheme.titleMedium?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+        child: FadeThrough(
+          duration: const Duration(milliseconds: 260),
+          scale: 0.92,
+          child: Text(
+            message ?? AppLocalizations.of(context).whichMatches,
+            key: ValueKey(message ?? 'hint'),
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: hasVerdict ? Colors.white : ink,
+              fontWeight: hasVerdict ? FontWeight.w800 : FontWeight.w700,
+            ),
+          ),
         ),
       ),
     );
@@ -398,7 +373,7 @@ class _Header extends StatelessWidget {
             transitionBuilder: (child, animation) => ScaleTransition(
               scale: CurvedAnimation(
                 parent: animation,
-                curve: Curves.elasticOut,
+                curve: Curves.easeOutBack,
               ),
               child: child,
             ),
@@ -420,7 +395,7 @@ class _Header extends StatelessWidget {
               transitionBuilder: (child, animation) => ScaleTransition(
                 scale: CurvedAnimation(
                   parent: animation,
-                  curve: Curves.elasticOut,
+                  curve: Curves.easeOutBack,
                 ),
                 child: child,
               ),

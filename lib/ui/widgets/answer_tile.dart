@@ -33,15 +33,14 @@ class AnswerTile extends StatefulWidget {
   State<AnswerTile> createState() => _AnswerTileState();
 }
 
-class _AnswerTileState extends State<AnswerTile>
-    with TickerProviderStateMixin {
+class _AnswerTileState extends State<AnswerTile> with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 650),
   );
 
-  static const _stagger = 80;
-  static const _entranceMs = 420;
+  static const _stagger = 60;
+  static const _entranceMs = 350;
 
   late final AnimationController _enter = AnimationController(
     vsync: this,
@@ -100,12 +99,12 @@ class _AnswerTileState extends State<AnswerTile>
         return switch (widget.state) {
           // A firm side-to-side shake that dies out.
           TileState.wrong => Transform.translate(
-            offset: Offset(sin(t * pi * 6) * 14 * (1 - t), 0),
+            offset: Offset(sin(t * pi * 6) * 10 * (1 - t), 0),
             child: child,
           ),
           // Pops up with a springy overshoot, then settles.
           TileState.correct => Transform.scale(
-            scale: 1 + 0.14 * sin(Curves.easeOut.transform(t) * pi),
+            scale: 1 + 0.04 * sin(Curves.easeInOut.transform(t) * pi),
             child: child,
           ),
           TileState.idle => child!,
@@ -185,10 +184,12 @@ class _Badge extends StatelessWidget {
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 450),
-      curve: Curves.elasticOut,
-      builder: (context, value, child) =>
-          Transform.scale(scale: value, child: child),
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutBack,
+      builder: (context, value, child) => Opacity(
+        opacity: value.clamp(0.0, 1.0),
+        child: Transform.scale(scale: value, child: child),
+      ),
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
