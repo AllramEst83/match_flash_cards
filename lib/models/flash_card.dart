@@ -7,6 +7,7 @@ class FlashCard {
     required this.word,
     this.description = '',
     this.imageBase64,
+    this.level = 0,
   });
 
   factory FlashCard.fromJson(Map<String, dynamic> json) => FlashCard(
@@ -14,6 +15,7 @@ class FlashCard {
         word: json['word'] as String,
         description: json['description'] as String? ?? '',
         imageBase64: json['image'] as String?,
+        level: json['level'] as int? ?? 0,
       );
 
   final String id;
@@ -22,6 +24,17 @@ class FlashCard {
 
   /// Optional picture, shown with the description side of the card.
   final String? imageBase64;
+
+  /// How well the kid knows this card, 0 (new or missed) to [maxLevel].
+  /// Study rounds pick low-level cards more often.
+  final int level;
+
+  static const maxLevel = 4;
+
+  /// Cards at or below this level count as tricky.
+  static const trickyLevel = 1;
+
+  bool get isTricky => level <= trickyLevel;
 
   Uint8List? _imageBytes;
 
@@ -36,12 +49,14 @@ class FlashCard {
     String? description,
     String? imageBase64,
     bool clearImage = false,
+    int? level,
   }) =>
       FlashCard(
         id: id,
         word: word ?? this.word,
         description: description ?? this.description,
         imageBase64: clearImage ? null : (imageBase64 ?? this.imageBase64),
+        level: level ?? this.level,
       );
 
   Map<String, dynamic> toJson() => {
@@ -49,5 +64,6 @@ class FlashCard {
         'word': word,
         'description': description,
         if (imageBase64 != null) 'image': imageBase64,
+        if (level != 0) 'level': level,
       };
 }

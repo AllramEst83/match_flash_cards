@@ -68,6 +68,26 @@ void main() {
       expect(repository.deckById(id)!.bestPoints, 30);
     });
 
+    test('levels cards up on first try and down when missed', () async {
+      final repository = await create();
+      final deck = repository.decks.single;
+      final [a, b, ...] = deck.cards;
+      repository.recordCardOutcomes(deck.id, {a.id: true, b.id: false});
+      repository.recordCardOutcomes(deck.id, {a.id: true, b.id: false});
+      var cards = repository.deckById(deck.id)!.cards;
+      expect(cards[0].level, 2);
+      expect(cards[1].level, 0);
+      expect(cards[2].level, 0);
+
+      final reloaded = DeckRepository(await SharedPreferences.getInstance());
+      expect(reloaded.deckById(deck.id)!.cards[0].level, 2);
+      for (var i = 0; i < 6; i++) {
+        repository.recordCardOutcomes(deck.id, {a.id: true});
+      }
+      cards = repository.deckById(deck.id)!.cards;
+      expect(cards[0].level, FlashCard.maxLevel);
+    });
+
     test('recovers from corrupt saved data', () async {
       final repository = await create({'decks_v1': 'not json'});
       expect(repository.decks, isEmpty);

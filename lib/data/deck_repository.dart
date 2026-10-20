@@ -72,6 +72,27 @@ class DeckRepository extends ChangeNotifier {
         ),
       );
 
+  /// Moves each card up a level when it was right first time, and back two
+  /// levels when it was missed. [outcomes] maps card id to first-try success.
+  void recordCardOutcomes(String deckId, Map<String, bool> outcomes) {
+    _update(
+      deckId,
+      (deck) => deck.copyWith(
+        cards: [
+          for (final card in deck.cards)
+            if (outcomes[card.id] case final firstTry?)
+              card.copyWith(
+                level: firstTry
+                    ? (card.level + 1).clamp(0, FlashCard.maxLevel)
+                    : (card.level - 2).clamp(0, FlashCard.maxLevel),
+              )
+            else
+              card,
+        ],
+      ),
+    );
+  }
+
   /// Saves a finished round. Returns true when it beat an earlier best.
   bool recordResult(String deckId, {required int stars, required int points}) {
     final deck = deckById(deckId);

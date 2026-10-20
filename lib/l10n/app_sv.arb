@@ -86,5 +86,7 @@
   "firstTryScore": "{correct} av {total} rätt på första försöket",
   "bestStreak": "Längsta raden: 🔥 {streak}",
   "playAgain": "Spela igen",
+  "practiceTricky": "Öva på svåra ord ({count})",
+  "trickyWords": "Svåra ord ({count})",
   "backToDeck": "Tillbaka till {deck}"
 }

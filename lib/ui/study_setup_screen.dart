@@ -30,6 +30,7 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
 
   StudyMode _mode = StudyMode.mix;
   int? _count;
+  bool _onlyTricky = false;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +43,9 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
       StudyMode.mix: (l10n.modeMix, l10n.modeMixHint),
     };
     final total = deck.cards.length;
+    final tricky = deck.trickyCount;
+    // Only worth offering once some cards are known and some are not.
+    final showTricky = tricky >= 2 && tricky < total;
     final lengths = <int?>[null, for (final n in [5, 10]) if (n < total) n];
 
     return Scaffold(
@@ -66,7 +70,7 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
               selected: _mode == mode,
               onTap: () => setState(() => _mode = mode),
             ),
-          if (lengths.length > 1) ...[
+          if (lengths.length > 1 || showTricky) ...[
             const SizedBox(height: 24),
             Text(
               l10n.howManyCards,
@@ -85,8 +89,24 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
                       length == null ? l10n.allCards(total) : '$length',
                       style: const TextStyle(fontSize: 18),
                     ),
-                    selected: _count == length,
-                    onSelected: (_) => setState(() => _count = length),
+                    selected: !_onlyTricky && _count == length,
+                    onSelected: (_) => setState(() {
+                      _onlyTricky = false;
+                      _count = length;
+                    }),
+                  ),
+                if (showTricky)
+                  ChoiceChip(
+                    avatar: const Icon(Icons.fitness_center_rounded, size: 20),
+                    label: Text(
+                      l10n.trickyWords(tricky),
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                    selected: _onlyTricky,
+                    onSelected: (_) => setState(() {
+                      _onlyTricky = true;
+                      _count = null;
+                    }),
                   ),
               ],
             ),
@@ -104,6 +124,7 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
                   deckId: widget.deckId,
                   mode: _mode,
                   count: _count,
+                  onlyTricky: _onlyTricky,
                 ),
               ),
             ),

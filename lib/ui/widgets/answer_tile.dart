@@ -29,7 +29,7 @@ class _AnswerTileState extends State<AnswerTile>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 450),
+    duration: const Duration(milliseconds: 650),
   );
 
   @override
@@ -50,7 +50,7 @@ class _AnswerTileState extends State<AnswerTile>
   Widget build(BuildContext context) {
     final (background, foreground) = switch (widget.state) {
       TileState.idle => (widget.color, Colors.white),
-      TileState.wrong => (Colors.grey.shade300, Colors.grey.shade900),
+      TileState.wrong => (Colors.red.shade800, Colors.white),
       TileState.correct => (Colors.green.shade800, Colors.white),
     };
 
@@ -59,19 +59,58 @@ class _AnswerTileState extends State<AnswerTile>
       builder: (context, child) {
         final t = _controller.value;
         return switch (widget.state) {
+          // A firm side-to-side shake that dies out.
           TileState.wrong => Transform.translate(
-              offset: Offset(sin(t * pi * 4) * 8 * (1 - t), 0),
+              offset: Offset(sin(t * pi * 6) * 14 * (1 - t), 0),
               child: child,
             ),
+          // Pops up with a springy overshoot, then settles.
           TileState.correct => Transform.scale(
-              scale: 1 + 0.08 * sin(t * pi),
+              scale: 1 + 0.14 * sin(Curves.easeOut.transform(t) * pi),
               child: child,
             ),
           TileState.idle => child!,
         };
       },
-      child: Material(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: widget.state == TileState.correct
+              ? [
+                  BoxShadow(
+                    color: Colors.green.shade600.withValues(alpha: 0.7),
+                    blurRadius: 24,
+                    spreadRadius: 4,
+                  ),
+                ]
+              : const [],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            _tile(context, background, foreground),
+            if (widget.state != TileState.idle)
+              Positioned(
+                top: -10,
+                right: -6,
+                child: _Badge(correct: widget.state == TileState.correct),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _tile(BuildContext context, Color background, Color foreground) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
         color: background,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
@@ -89,6 +128,40 @@ class _AnswerTileState extends State<AnswerTile>
                   ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The check or cross that pops onto a tile that was just answered.
+class _Badge extends StatelessWidget {
+  const _Badge({required this.correct});
+
+  final bool correct;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.elasticOut,
+      builder: (context, value, child) =>
+          Transform.scale(scale: value, child: child),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: correct ? Colors.green.shade800 : Colors.red.shade800,
+            width: 3,
+          ),
+        ),
+        child: Icon(
+          correct ? Icons.check_rounded : Icons.close_rounded,
+          size: 28,
+          color: correct ? Colors.green.shade800 : Colors.red.shade800,
         ),
       ),
     );

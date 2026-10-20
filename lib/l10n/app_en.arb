@@ -95,6 +95,10 @@
   "bestStreak": "Best streak: 🔥 {streak}",
   "@bestStreak": {"placeholders": {"streak": {"type": "int"}}},
   "playAgain": "Play again",
+  "practiceTricky": "Practice tricky words ({count})",
+  "@practiceTricky": {"placeholders": {"count": {"type": "int"}}},
+  "trickyWords": "Tricky words ({count})",
+  "@trickyWords": {"placeholders": {"count": {"type": "int"}}},
   "backToDeck": "Back to {deck}",
   "@backToDeck": {"placeholders": {"deck": {"type": "String"}}}
 }

@@ -75,6 +75,26 @@ void main() {
     await tester.pump(const Duration(seconds: 4));
   });
 
+  testWidgets('offers tricky-word practice once some cards are known',
+      (tester) async {
+    final repository = await _repository();
+    final deck = repository.addDeck('Mixed');
+    for (final word in ['A', 'B', 'C', 'D']) {
+      repository.addCard(deck.id, word: word, description: 'About $word');
+    }
+    final cards = repository.deckById(deck.id)!.cards;
+    for (var i = 0; i < 4; i++) {
+      repository.recordCardOutcomes(deck.id, {cards[0].id: true, cards[1].id: true});
+    }
+    await tester.pumpWidget(_app(repository));
+    await tester.tap(find.text('Mixed'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Study'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tricky words (2)'), findsOneWidget);
+  });
+
   testWidgets('switching language in settings updates the app at once',
       (tester) async {
     final repository = await _repository();

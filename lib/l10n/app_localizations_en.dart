@@ -270,6 +270,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playAgain => 'Play again';
 
   @override
+  String practiceTricky(int count) {
+    return 'Practice tricky words ($count)';
+  }
+
+  @override
+  String trickyWords(int count) {
+    return 'Tricky words ($count)';
+  }
+
+  @override
   String backToDeck(String deck) {
     return 'Back to $deck';
   }

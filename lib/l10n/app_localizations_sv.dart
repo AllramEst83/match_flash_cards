@@ -271,6 +271,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get playAgain => 'Spela igen';
 
   @override
+  String practiceTricky(int count) {
+    return 'Öva på svåra ord ($count)';
+  }
+
+  @override
+  String trickyWords(int count) {
+    return 'Svåra ord ($count)';
+  }
+
+  @override
   String backToDeck(String deck) {
     return 'Tillbaka till $deck';
   }

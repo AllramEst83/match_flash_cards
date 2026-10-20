@@ -89,11 +89,17 @@ class StudySession {
     required List<FlashCard> cards,
     required this.mode,
     int? count,
+    bool onlyTricky = false,
     Random? random,
   })  : assert(cards.length >= 2, 'A round needs at least two cards'),
         _allCards = List.of(cards),
         _random = random ?? Random() {
-    final shuffled = List.of(cards)..shuffle(_random);
+    var pool = List.of(cards);
+    if (onlyTricky) {
+      final tricky = pool.where((c) => c.isTricky).toList();
+      if (tricky.length >= 2) pool = tricky;
+    }
+    final shuffled = _weightedShuffle(pool);
     final picked = count == null ? shuffled : shuffled.take(count).toList();
     total = picked.length;
     _queue = [for (final card in picked) _Entry(card)];
@@ -101,6 +107,10 @@ class StudySession {
   }
 
   static const maxOptions = 4;
+
+  /// How much more likely a card is to be picked, by level. Every card can
+  /// still show up, and the order is always random.
+  static const levelWeights = [8, 4, 2, 1, 1];
 
   final StudyMode mode;
   final List<FlashCard> _allCards;
@@ -117,6 +127,10 @@ class StudySession {
   int points = 0;
   int streak = 0;
   int bestStreak = 0;
+
+  /// Per card asked this round: true when answered right on the first try.
+  /// Fill-in happens as the round goes on.
+  final Map<String, bool> outcomes = {};
 
   bool get isFinished => _queue.isEmpty;
 
@@ -168,7 +182,10 @@ class StudySession {
         _ => 0,
       };
     }
-    if (!entry.isRetry) _completed++;
+    if (!entry.isRetry) {
+      _completed++;
+      outcomes[entry.card.id] = firstTry;
+    }
 
     points += gained + bonus;
     _resolved = true;
@@ -186,6 +203,19 @@ class StudySession {
     _queue.removeAt(0);
     _resolved = false;
     _buildQuestion();
+  }
+
+  /// Random order where low-level cards tend to come first
+  /// (weighted sampling without replacement).
+  List<FlashCard> _weightedShuffle(List<FlashCard> pool) {
+    final keyed = [
+      for (final card in pool)
+        (
+          card,
+          pow(_random.nextDouble(), 1 / levelWeights[card.level.clamp(0, 4)]),
+        ),
+    ]..sort((a, b) => b.$2.compareTo(a.$2));
+    return [for (final (card, _) in keyed) card];
   }
 
   /// Puts a missed card back later in the round, never straight away unless

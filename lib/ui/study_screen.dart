@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/deck_repository.dart';
 import '../l10n/app_localizations.dart';
@@ -21,12 +22,14 @@ class StudyScreen extends StatefulWidget {
     required this.deckId,
     required this.mode,
     this.count,
+    this.onlyTricky = false,
   });
 
   final DeckRepository repository;
   final String deckId;
   final StudyMode mode;
   final int? count;
+  final bool onlyTricky;
 
   @override
   State<StudyScreen> createState() => _StudyScreenState();
@@ -38,8 +41,10 @@ class _StudyScreenState extends State<StudyScreen> {
   final _wrong = <String>{};
   String? _correct;
   String? _message;
+  bool _messageIsCorrect = true;
   bool _locked = false;
   bool _newBest = false;
+  late bool _onlyTricky = widget.onlyTricky;
 
   @override
   void initState() {
@@ -53,6 +58,7 @@ class _StudyScreenState extends State<StudyScreen> {
       cards: deck.cards,
       mode: widget.mode,
       count: widget.count,
+      onlyTricky: _onlyTricky,
     );
     _wrong.clear();
     _correct = null;
@@ -67,9 +73,11 @@ class _StudyScreenState extends State<StudyScreen> {
     final result = _session.answer(option);
 
     if (!result.correct) {
+      HapticFeedback.heavyImpact();
       setState(() {
         _wrong.add(option.key);
         _message = l10n.tryAgain;
+        _messageIsCorrect = false;
       });
       return;
     }
@@ -82,8 +90,10 @@ class _StudyScreenState extends State<StudyScreen> {
       l10n.cheer5,
       l10n.cheer6,
     ];
+    HapticFeedback.mediumImpact();
     setState(() {
       _locked = true;
+      _messageIsCorrect = true;
       _correct = option.key;
       _message = result.streakBonus > 0
           ? l10n.streakBonus(result.streak, result.streakBonus)
@@ -95,6 +105,7 @@ class _StudyScreenState extends State<StudyScreen> {
     _session.advance();
     if (_session.isFinished) {
       final round = _session.result;
+      widget.repository.recordCardOutcomes(widget.deckId, _session.outcomes);
       _newBest = widget.repository.recordResult(
         widget.deckId,
         stars: round.stars,
@@ -135,7 +146,15 @@ class _StudyScreenState extends State<StudyScreen> {
             deckName: deck.name,
             result: _session.result,
             newBest: _newBest,
-            onPlayAgain: () => setState(_startRound),
+            trickyLeft: deck.trickyCount,
+            onPlayAgain: () => setState(() {
+              _onlyTricky = false;
+              _startRound();
+            }),
+            onPracticeTricky: () => setState(() {
+              _onlyTricky = true;
+              _startRound();
+            }),
             onBackToDeck: _backToDeck,
           ),
         ),
@@ -208,10 +227,16 @@ class _StudyScreenState extends State<StudyScreen> {
           SizedBox(
             height: 40,
             child: Center(
-              child: Text(
-                _message ?? AppLocalizations.of(context).whichMatches,
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                transitionBuilder: (child, animation) => ScaleTransition(
+                  scale: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.elasticOut,
+                  ),
+                  child: child,
+                ),
+                child: _feedback(theme),
               ),
             ),
           ),
@@ -241,6 +266,36 @@ class _StudyScreenState extends State<StudyScreen> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  /// The line under the question: neutral hint, or a green/red verdict.
+  Widget _feedback(ThemeData theme) {
+    final message = _message;
+    if (message == null) {
+      return Text(
+        AppLocalizations.of(context).whichMatches,
+        key: const ValueKey('hint'),
+        style:
+            theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+      );
+    }
+    final color =
+        _messageIsCorrect ? Colors.green.shade800 : Colors.red.shade800;
+    return Container(
+      key: ValueKey('$message-$_messageIsCorrect-${_wrong.length}'),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        message,
+        style: theme.textTheme.titleMedium?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

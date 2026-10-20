@@ -566,6 +566,18 @@ abstract class AppLocalizations {
   /// **'Play again'**
   String get playAgain;
 
+  /// No description provided for @practiceTricky.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice tricky words ({count})'**
+  String practiceTricky(int count);
+
+  /// No description provided for @trickyWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Tricky words ({count})'**
+  String trickyWords(int count);
+
   /// No description provided for @backToDeck.
   ///
   /// In en, this message translates to:

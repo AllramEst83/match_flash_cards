@@ -13,14 +13,18 @@ class ResultsView extends StatelessWidget {
     required this.deckName,
     required this.result,
     required this.newBest,
+    required this.trickyLeft,
     required this.onPlayAgain,
+    required this.onPracticeTricky,
     required this.onBackToDeck,
   });
 
   final String deckName;
   final RoundResult result;
   final bool newBest;
+  final int trickyLeft;
   final VoidCallback onPlayAgain;
+  final VoidCallback onPracticeTricky;
   final VoidCallback onBackToDeck;
 
   @override
@@ -92,6 +96,18 @@ class ResultsView extends StatelessWidget {
                   icon: const Icon(Icons.replay_rounded),
                   label: Text(l10n.playAgain),
                 ),
+                if (trickyLeft >= 2) ...[
+                  const SizedBox(height: 12),
+                  FilledButton.tonalIcon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(260, 56),
+                      textStyle: const TextStyle(fontSize: 20),
+                    ),
+                    onPressed: onPracticeTricky,
+                    icon: const Icon(Icons.fitness_center_rounded),
+                    label: Text(l10n.practiceTricky(trickyLeft)),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 OutlinedButton(
                   style: OutlinedButton.styleFrom(

@@ -26,6 +26,8 @@ class Deck {
   final int bestStars;
   final int bestPoints;
 
+  int get trickyCount => cards.where((c) => c.isTricky).length;
+
   Deck copyWith({
     String? name,
     List<FlashCard>? cards,

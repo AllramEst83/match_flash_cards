@@ -254,4 +254,68 @@ void main() {
       expect(session.isFinished, isTrue);
     });
   });
+
+  group('spaced repetition', () {
+    List<FlashCard> leveled() => [
+          for (var i = 0; i < 10; i++)
+            FlashCard(
+              id: 'id$i',
+              word: 'word$i',
+              description: 'desc$i',
+              level: i < 2 ? 0 : 4,
+            ),
+        ];
+
+    test('tricky cards are picked more often when the round is short', () {
+      var trickyPicks = 0;
+      for (var seed = 0; seed < 300; seed++) {
+        final session = StudySession(
+          cards: leveled(),
+          mode: StudyMode.words,
+          count: 3,
+          random: Random(seed),
+        );
+        if (session.current.card.level == 0) trickyPicks++;
+      }
+      // First card is a tricky one far more than the 20% chance by luck.
+      expect(trickyPicks, greaterThan(150));
+    });
+
+    test('every card can still be picked', () {
+      final seen = <String>{};
+      for (var seed = 0; seed < 400; seed++) {
+        seen.add(StudySession(
+          cards: leveled(),
+          mode: StudyMode.words,
+          count: 1,
+          random: Random(seed),
+        ).current.card.id);
+      }
+      expect(seen.length, 10);
+    });
+
+    test('tricky-only rounds ask just the tricky cards', () {
+      final session = StudySession(
+        cards: leveled(),
+        mode: StudyMode.words,
+        onlyTricky: true,
+      );
+      expect(session.total, 2);
+      expect(session.current.options.length, 4);
+    });
+
+    test('records first-try outcomes per card', () {
+      final session = StudySession(cards: _cards(3), mode: StudyMode.words);
+      final missed = session.current.card.id;
+      session.answer(_wrong(session));
+      session.answer(_correct(session));
+      session.advance();
+      while (!session.isFinished) {
+        session.answer(_correct(session));
+        session.advance();
+      }
+      expect(session.outcomes[missed], isFalse);
+      expect(session.outcomes.values.where((ok) => ok), hasLength(2));
+    });
+  });
 }
