@@ -40,7 +40,8 @@ void main() {
 
     test('seeds a sample deck on first launch only', () async {
       final repository = await create();
-      expect(repository.decks.single.name, 'Animals');
+      expect(repository.decks.single.name, 'Materia och material');
+      expect(repository.decks.single.cards, hasLength(10));
       final prefs = await SharedPreferences.getInstance();
       final reloaded = DeckRepository(prefs);
       expect(reloaded.decks.single.id, repository.decks.single.id);

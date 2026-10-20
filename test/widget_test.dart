@@ -23,8 +23,8 @@ void main() {
     await tester.pumpWidget(_app(repository));
 
     expect(find.text('My Decks'), findsOneWidget);
-    expect(find.text('Animals'), findsOneWidget);
-    expect(find.text('4 cards'), findsOneWidget);
+    expect(find.text('Materia och material'), findsOneWidget);
+    expect(find.text('10 cards'), findsOneWidget);
   });
 
   testWidgets('study button needs two cards', (tester) async {
@@ -98,7 +98,7 @@ void main() {
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
     expect(find.text('Mina kortlekar'), findsOneWidget);
-    expect(find.text('4 kort'), findsOneWidget);
+    expect(find.text('10 kort'), findsOneWidget);
   });
 
   testWidgets('remembers the chosen language', (tester) async {

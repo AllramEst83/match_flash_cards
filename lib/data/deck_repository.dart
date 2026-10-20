@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/deck.dart';
 import '../models/flash_card.dart';
 import '../models/ids.dart';
+import 'default_deck.dart';
 
 class DeckRepository extends ChangeNotifier {
   DeckRepository(this._prefs) {
@@ -107,7 +108,7 @@ class DeckRepository extends ChangeNotifier {
   void _load() {
     final raw = _prefs.getString(_storageKey);
     if (raw == null) {
-      _decks = [_sampleDeck()];
+      _decks = [defaultDeck()];
       _commit();
       return;
     }
@@ -119,22 +120,5 @@ class DeckRepository extends ChangeNotifier {
     } on Object {
       _decks = [];
     }
-  }
-
-  Deck _sampleDeck() {
-    const pairs = {
-      'Cat': 'A small furry pet that purrs',
-      'Dog': 'A pet that barks and wags its tail',
-      'Fish': 'An animal that lives and swims in water',
-      'Bird': 'An animal with feathers and wings',
-    };
-    return Deck(
-      id: newId(),
-      name: 'Animals',
-      cards: [
-        for (final entry in pairs.entries)
-          FlashCard(id: newId(), word: entry.key, description: entry.value),
-      ],
-    );
   }
 }
