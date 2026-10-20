@@ -113,13 +113,13 @@ class DeckEditorScreen extends StatelessWidget {
                           ),
                           onPressed: canStudy
                               ? () => Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => StudySetupScreen(
-                                        repository: repository,
-                                        deckId: deckId,
-                                      ),
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => StudySetupScreen(
+                                      repository: repository,
+                                      deckId: deckId,
                                     ),
-                                  )
+                                  ),
+                                )
                               : null,
                           icon: const Icon(Icons.play_arrow_rounded, size: 32),
                           label: Text(l10n.study),
@@ -139,11 +139,8 @@ class DeckEditorScreen extends StatelessWidget {
   void _openForm(BuildContext context, FlashCard? card) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => CardFormScreen(
-          repository: repository,
-          deckId: deckId,
-          card: card,
-        ),
+        builder: (_) =>
+            CardFormScreen(repository: repository, deckId: deckId, card: card),
       ),
     );
   }
@@ -195,20 +192,31 @@ class _CardTile extends StatelessWidget {
               )
             : ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.memory(image, width: 48, height: 48, fit: BoxFit.cover),
+                child: Image.memory(
+                  image,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                ),
               ),
         title: Text(
           card.word,
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleMedium
               ?.copyWith(color: ink, fontWeight: FontWeight.w700),
         ),
         subtitle: card.description.isEmpty
             ? null
             : Text(
                 card.description,
-                style: const TextStyle(color: inkSoft, fontSize: 15, height: 1.3),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: inkSoft,
+                  fontSize: 15,
+                  height: 1.3,
+                ),
               ),
         trailing: IconButton(
           tooltip: AppLocalizations.of(context).deleteCardTooltip,

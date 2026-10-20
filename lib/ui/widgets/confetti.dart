@@ -12,12 +12,12 @@ class Confetti extends StatefulWidget {
 
 class _Piece {
   _Piece(Random random)
-      : x = random.nextDouble(),
-        delay = random.nextDouble() * 0.4,
-        speed = 0.6 + random.nextDouble() * 0.5,
-        spin = random.nextDouble() * 6,
-        size = 6 + random.nextDouble() * 8,
-        color = Colors.primaries[random.nextInt(Colors.primaries.length)];
+    : x = random.nextDouble(),
+      delay = random.nextDouble() * 0.4,
+      speed = 0.6 + random.nextDouble() * 0.5,
+      spin = random.nextDouble() * 6,
+      size = 6 + random.nextDouble() * 8,
+      color = Colors.primaries[random.nextInt(Colors.primaries.length)];
 
   final double x;
   final double delay;

@@ -18,9 +18,7 @@ class StarRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < 3; i++) _star(i < stars, i),
-      ],
+      children: [for (var i = 0; i < 3; i++) _star(i < stars, i)],
     );
   }
 

@@ -67,9 +67,7 @@ class _LanguageTile extends StatelessWidget {
         leading: Text(flag, style: const TextStyle(fontSize: 36)),
         title: Text(
           label,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
+          style: Theme.of(context).textTheme.titleLarge
               ?.copyWith(fontWeight: FontWeight.w700),
         ),
         trailing: selected

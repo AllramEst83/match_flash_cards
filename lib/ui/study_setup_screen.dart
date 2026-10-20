@@ -39,14 +39,21 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
     if (deck == null) return const Scaffold();
     final labels = {
       StudyMode.words: (l10n.modeWords, l10n.modeWordsHint),
-      StudyMode.descriptions: (l10n.modeDescriptions, l10n.modeDescriptionsHint),
+      StudyMode.descriptions: (
+        l10n.modeDescriptions,
+        l10n.modeDescriptionsHint,
+      ),
       StudyMode.mix: (l10n.modeMix, l10n.modeMixHint),
     };
     final total = deck.cards.length;
     final tricky = deck.trickyCount;
     // Only worth offering once some cards are known and some are not.
     final showTricky = tricky >= 2 && tricky < total;
-    final lengths = <int?>[null, for (final n in [5, 10]) if (n < total) n];
+    final lengths = <int?>[
+      null,
+      for (final n in [5, 10])
+        if (n < total) n,
+    ];
 
     return Scaffold(
       appBar: AppBar(title: Text(deck.name)),
@@ -55,9 +62,7 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
         children: [
           Text(
             l10n.whatToSee,
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
+            style: Theme.of(context).textTheme.headlineSmall
                 ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
@@ -74,10 +79,8 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
             const SizedBox(height: 24),
             Text(
               l10n.howManyCards,
-              style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -169,9 +172,7 @@ class _ModeTile extends StatelessWidget {
         ),
         title: Text(
           label,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
+          style: Theme.of(context).textTheme.titleLarge
               ?.copyWith(fontWeight: FontWeight.w700),
         ),
         subtitle: Text(hint, style: const TextStyle(fontSize: 15)),

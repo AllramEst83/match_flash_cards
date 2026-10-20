@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:match_flash_cards/app.dart';
 import 'package:match_flash_cards/data/deck_repository.dart';
 import 'package:match_flash_cards/data/settings_controller.dart';
+import 'package:match_flash_cards/ui/widgets/answer_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late SettingsController _settings;
@@ -93,6 +94,49 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tricky words (2)'), findsOneWidget);
+  });
+
+  testWidgets('long questions and answers fit a small phone screen',
+      (tester) async {
+    tester.view.physicalSize = const Size(360 * 3, 640 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    final repository = await _repository();
+    final deck = repository.decks.firstWhere((d) => d.name == 'Vasatiden');
+    await tester.pumpWidget(_app(repository));
+
+    await tester.tap(find.text('Vasatiden'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Study'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mix'));
+    await tester.scrollUntilVisible(find.text('Play!'), 200);
+    await tester.tap(find.text('Play!'));
+    await tester.pumpAndSettle();
+
+    for (var i = 0; i < 4; i++) {
+      final texts = tester
+          .widgetList<Text>(find.byType(Text))
+          .map((t) => t.data)
+          .whereType<String>()
+          .toList();
+      // The asked card is the only one showing both its sides: one as the
+      // prompt, the other among the answers.
+      final asked = deck.cards.firstWhere(
+        (c) => texts.contains(c.word) && texts.contains(c.description),
+      );
+      // Tap the answer side, i.e. the one that is in an answer tile.
+      final tile = find.ancestor(
+        of: find.text(asked.word),
+        matching: find.byType(AnswerTile),
+      );
+      final answer = tile.evaluate().isNotEmpty ? asked.word : asked.description;
+      await tester.ensureVisible(find.text(answer));
+      await tester.tap(find.text(answer));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+    }
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('switching language in settings updates the app at once',

@@ -14,6 +14,9 @@ class AnswerTile extends StatefulWidget {
     required this.color,
     required this.state,
     required this.onTap,
+    this.index = 0,
+    this.fontSize = 22,
+    this.textAlign = TextAlign.center,
   });
 
   final AnswerOption option;
@@ -21,15 +24,37 @@ class AnswerTile extends StatefulWidget {
   final TileState state;
   final VoidCallback onTap;
 
+  /// Position in the list, used to stagger the entrance.
+  final int index;
+  final double fontSize;
+  final TextAlign textAlign;
+
   @override
   State<AnswerTile> createState() => _AnswerTileState();
 }
 
 class _AnswerTileState extends State<AnswerTile>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 650),
+  );
+
+  static const _stagger = 80;
+  static const _entranceMs = 420;
+
+  late final AnimationController _enter = AnimationController(
+    vsync: this,
+    duration: Duration(milliseconds: _entranceMs + widget.index * _stagger),
+  )..forward();
+
+  late final Animation<double> _entrance = CurvedAnimation(
+    parent: _enter,
+    curve: Interval(
+      widget.index * _stagger / (_entranceMs + widget.index * _stagger),
+      1,
+      curve: Curves.easeOutCubic,
+    ),
   );
 
   @override
@@ -43,6 +68,7 @@ class _AnswerTileState extends State<AnswerTile>
   @override
   void dispose() {
     _controller.dispose();
+    _enter.dispose();
     super.dispose();
   }
 
@@ -54,6 +80,19 @@ class _AnswerTileState extends State<AnswerTile>
       TileState.correct => (Colors.green.shade800, Colors.white),
     };
 
+    return FadeTransition(
+      opacity: _entrance,
+      child: SlideTransition(
+        position: Tween(
+          begin: const Offset(0, 0.25),
+          end: Offset.zero,
+        ).animate(_entrance),
+        child: _animated(context, background, foreground),
+      ),
+    );
+  }
+
+  Widget _animated(BuildContext context, Color background, Color foreground) {
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -61,14 +100,14 @@ class _AnswerTileState extends State<AnswerTile>
         return switch (widget.state) {
           // A firm side-to-side shake that dies out.
           TileState.wrong => Transform.translate(
-              offset: Offset(sin(t * pi * 6) * 14 * (1 - t), 0),
-              child: child,
-            ),
+            offset: Offset(sin(t * pi * 6) * 14 * (1 - t), 0),
+            child: child,
+          ),
           // Pops up with a springy overshoot, then settles.
           TileState.correct => Transform.scale(
-              scale: 1 + 0.14 * sin(Curves.easeOut.transform(t) * pi),
-              child: child,
-            ),
+            scale: 1 + 0.14 * sin(Curves.easeOut.transform(t) * pi),
+            child: child,
+          ),
           TileState.idle => child!,
         };
       },
@@ -122,10 +161,12 @@ class _AnswerTileState extends State<AnswerTile>
             child: OptionContent(
               option: widget.option,
               imageHeight: 90,
+              textAlign: widget.textAlign,
               textStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: foreground,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: foreground,
+                fontSize: widget.fontSize,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),

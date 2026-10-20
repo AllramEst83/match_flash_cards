@@ -10,6 +10,7 @@ import '../models/study_mode.dart';
 import 'deck_editor_screen.dart';
 import 'palette.dart';
 import 'results_view.dart';
+import 'widgets/adaptive_text.dart';
 import 'widgets/answer_tile.dart';
 import 'widgets/option_content.dart';
 import 'widgets/text_prompt.dart';
@@ -38,6 +39,7 @@ class StudyScreen extends StatefulWidget {
 class _StudyScreenState extends State<StudyScreen> {
   final _random = Random();
   late StudySession _session;
+  final _scroll = ScrollController();
   final _wrong = <String>{};
   String? _correct;
   String? _message;
@@ -65,6 +67,12 @@ class _StudyScreenState extends State<StudyScreen> {
     _message = null;
     _locked = false;
     _newBest = false;
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
   }
 
   Future<void> _onTap(AnswerOption option) async {
@@ -103,6 +111,13 @@ class _StudyScreenState extends State<StudyScreen> {
     if (!mounted) return;
 
     _session.advance();
+    if (_scroll.hasClients && _scroll.offset > 0) {
+      _scroll.animateTo(
+        0,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    }
     if (_session.isFinished) {
       final round = _session.result;
       widget.repository.recordCardOutcomes(widget.deckId, _session.outcomes);
@@ -132,9 +147,8 @@ class _StudyScreenState extends State<StudyScreen> {
     if (quit && mounted) Navigator.of(context).pop();
   }
 
-  void _backToDeck() => Navigator.of(context).popUntil(
-        (route) => route.settings.name == DeckEditorScreen.routeName,
-      );
+  void _backToDeck() => Navigator.of(context)
+      .popUntil((route) => route.settings.name == DeckEditorScreen.routeName);
 
   @override
   Widget build(BuildContext context) {
@@ -182,51 +196,83 @@ class _StudyScreenState extends State<StudyScreen> {
   Widget _buildQuestion(BuildContext context) {
     final question = _session.current;
     final theme = Theme.of(context);
+    // Text sizes follow the content, so short words are big and sentences fit.
+    final promptLength = question.prompt.text.length;
+    final answerLength = longest(question.options.map((o) => o.text.length));
+    final answerSize = adaptiveFontSize(
+      answerLength,
+      max: 22,
+      min: 16,
+      shortLength: 30,
+    );
+    final answerAlign = adaptiveAlign(answerLength);
     return SingleChildScrollView(
+      controller: _scroll,
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          AnimatedSwitcher(
+          AnimatedSize(
             duration: const Duration(milliseconds: 350),
-            transitionBuilder: (child, animation) => SlideTransition(
-              position: Tween(
-                begin: const Offset(1, 0),
-                end: Offset.zero,
-              ).animate(animation),
-              child: FadeTransition(opacity: animation, child: child),
-            ),
-            child: Card(
-              key: ValueKey(question.number),
-              clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 350),
+              layoutBuilder: (current, previous) => Stack(
+                alignment: Alignment.topCenter,
+                children: [...previous, ?current],
               ),
-              child: Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(minHeight: 160),
-                padding: const EdgeInsets.all(24),
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF6C40F5), Color(0xFFD81B60)],
-                  ),
+              transitionBuilder: (child, animation) => SlideTransition(
+                position: Tween(begin: const Offset(0.3, 0), end: Offset.zero)
+                    .animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+              child: Card(
+                key: ValueKey(question.number),
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28),
                 ),
-                child: OptionContent(
-                  option: question.prompt,
-                  imageHeight: 140,
-                  textStyle: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                child: Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 120),
+                  padding: const EdgeInsets.all(24),
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF6C40F5), Color(0xFFD81B60)],
+                    ),
+                  ),
+                  child: OptionContent(
+                    option: question.prompt,
+                    imageHeight: 140,
+                    textAlign: adaptiveAlign(promptLength, centerUpTo: 50),
+                    textStyle: theme.textTheme.headlineMedium?.copyWith(
+                      fontSize: adaptiveFontSize(
+                        promptLength,
+                        max: 30,
+                        min: 19,
+                      ),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          SizedBox(
-            height: 40,
-            child: Center(
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 44),
+              alignment: Alignment.center,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 250),
                 transitionBuilder: (child, animation) => ScaleTransition(
@@ -244,8 +290,9 @@ class _StudyScreenState extends State<StudyScreen> {
             builder: (context, constraints) {
               const gap = 12.0;
               final wide = constraints.maxWidth >= 600;
-              final width =
-                  wide ? (constraints.maxWidth - gap) / 2 : constraints.maxWidth;
+              final width = wide
+                  ? (constraints.maxWidth - gap) / 2
+                  : constraints.maxWidth;
               return Wrap(
                 spacing: gap,
                 runSpacing: gap,
@@ -256,6 +303,9 @@ class _StudyScreenState extends State<StudyScreen> {
                       child: AnswerTile(
                         key: ValueKey('${question.number}-${option.key}'),
                         option: option,
+                        index: index,
+                        fontSize: answerSize,
+                        textAlign: answerAlign,
                         color: playfulColor(index),
                         state: _tileState(option),
                         onTap: () => _onTap(option),
@@ -277,12 +327,14 @@ class _StudyScreenState extends State<StudyScreen> {
       return Text(
         AppLocalizations.of(context).whichMatches,
         key: const ValueKey('hint'),
-        style:
-            theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
       );
     }
-    final color =
-        _messageIsCorrect ? Colors.green.shade800 : Colors.red.shade800;
+    final color = _messageIsCorrect
+        ? Colors.green.shade800
+        : Colors.red.shade800;
     return Container(
       key: ValueKey('$message-$_messageIsCorrect-${_wrong.length}'),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -341,19 +393,42 @@ class _Header extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          if (session.streak >= 2)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Text(
-                '🔥${session.streak}',
-                style: theme.textTheme.titleLarge,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) => ScaleTransition(
+              scale: CurvedAnimation(
+                parent: animation,
+                curve: Curves.elasticOut,
               ),
+              child: child,
             ),
+            child: session.streak >= 2
+                ? Padding(
+                    key: ValueKey(session.streak),
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Text(
+                      '🔥${session.streak}',
+                      style: theme.textTheme.titleLarge,
+                    ),
+                  )
+                : const SizedBox.shrink(key: ValueKey('no-streak')),
+          ),
           Chip(
             avatar: Icon(Icons.star_rounded, color: Colors.amber.shade800),
-            label: Text(
-              '${session.points}',
-              style: theme.textTheme.titleMedium,
+            label: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) => ScaleTransition(
+                scale: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.elasticOut,
+                ),
+                child: child,
+              ),
+              child: Text(
+                '${session.points}',
+                key: ValueKey(session.points),
+                style: theme.textTheme.titleMedium,
+              ),
             ),
           ),
         ],

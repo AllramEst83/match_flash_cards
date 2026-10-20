@@ -47,6 +47,11 @@ class MatchFlashCardsApp extends StatelessWidget {
           colorScheme: scheme,
           useMaterial3: true,
           scaffoldBackgroundColor: const Color(0xFFF6F1FF),
+          pageTransitionsTheme: const PageTransitionsTheme(
+            builders: {
+              TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+            },
+          ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
             fillColor: Colors.white,

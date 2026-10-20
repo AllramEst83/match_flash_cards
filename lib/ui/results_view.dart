@@ -60,7 +60,10 @@ class ResultsView extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 12),
                     child: Chip(
                       backgroundColor: const Color(0xFFFFF0B3),
-                      side: const BorderSide(color: Color(0xFF9A6200), width: 2),
+                      side: const BorderSide(
+                        color: Color(0xFF9A6200),
+                        width: 2,
+                      ),
                       avatar: const Icon(
                         Icons.emoji_events_rounded,
                         color: Color(0xFF9A6200),
@@ -121,7 +124,8 @@ class ResultsView extends StatelessWidget {
             ),
           ),
         ),
-        if (result.stars == 3 || newBest) const Positioned.fill(child: Confetti()),
+        if (result.stars == 3 || newBest)
+          const Positioned.fill(child: Confetti()),
       ],
     );
   }

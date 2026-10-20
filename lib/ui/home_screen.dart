@@ -58,10 +58,8 @@ class HomeScreen extends StatelessWidget {
           return ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
             itemCount: decks.length,
-            itemBuilder: (context, index) => _DeckTile(
-              deck: decks[index],
-              repository: repository,
-            ),
+            itemBuilder: (context, index) =>
+                _DeckTile(deck: decks[index], repository: repository),
           );
         },
       ),
@@ -120,23 +118,26 @@ class _DeckTile extends StatelessWidget {
         ),
         title: Text(
           deck.name,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleLarge
               ?.copyWith(fontWeight: FontWeight.w700),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
-          child: Row(
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 2,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
                 l10n.cardCount(deck.cards.length),
                 style: const TextStyle(color: inkSoft, fontSize: 15),
               ),
-              const SizedBox(width: 12),
               StarRow(stars: deck.bestStars),
-              if (deck.bestPoints > 0) Text(
-                  ' ${l10n.bestPoints(deck.bestPoints)}',
+              if (deck.bestPoints > 0)
+                Text(
+                  l10n.bestPoints(deck.bestPoints),
                   style: const TextStyle(color: inkSoft, fontSize: 15),
                 ),
             ],

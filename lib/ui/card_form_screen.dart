@@ -46,7 +46,9 @@ class _CardFormScreenState extends State<CardFormScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final editing = widget.card != null;
-    final imageBytes = _imageBase64 == null ? null : base64Decode(_imageBase64!);
+    final imageBytes = _imageBase64 == null
+        ? null
+        : base64Decode(_imageBase64!);
     return Scaffold(
       appBar: AppBar(title: Text(editing ? l10n.editCard : l10n.newCard)),
       body: Form(
@@ -59,9 +61,7 @@ class _CardFormScreenState extends State<CardFormScreen> {
               autofocus: !editing,
               textCapitalization: TextCapitalization.sentences,
               style: const TextStyle(fontSize: 20),
-              decoration: InputDecoration(
-                labelText: l10n.wordLabel,
-              ),
+              decoration: InputDecoration(labelText: l10n.wordLabel),
               validator: (value) => (value == null || value.trim().isEmpty)
                   ? l10n.typeTheWord
                   : null,
@@ -73,15 +73,17 @@ class _CardFormScreenState extends State<CardFormScreen> {
               maxLines: 4,
               textCapitalization: TextCapitalization.sentences,
               style: const TextStyle(fontSize: 20),
-              decoration: InputDecoration(
-                labelText: l10n.descriptionLabel,
-              ),
+              decoration: InputDecoration(labelText: l10n.descriptionLabel),
             ),
             const SizedBox(height: 16),
             if (imageBytes != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.memory(imageBytes, height: 180, fit: BoxFit.contain),
+                child: Image.memory(
+                  imageBytes,
+                  height: 180,
+                  fit: BoxFit.contain,
+                ),
               ),
             const SizedBox(height: 8),
             Row(
@@ -167,9 +169,8 @@ class _CardFormScreenState extends State<CardFormScreen> {
       });
     } on PlatformException {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.pictureError)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.pictureError)));
     }
   }
 
