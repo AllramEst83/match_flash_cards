@@ -6,9 +6,9 @@ import 'package:match_flash_cards/models/flash_card.dart';
 import 'package:match_flash_cards/models/study_mode.dart';
 
 List<FlashCard> _cards(int n) => [
-      for (var i = 0; i < n; i++)
-        FlashCard(id: 'id$i', word: 'word$i', description: 'desc$i'),
-    ];
+  for (var i = 0; i < n; i++)
+    FlashCard(id: 'id$i', word: 'word$i', description: 'desc$i'),
+];
 
 AnswerOption _correct(StudySession s) =>
     s.current.options.firstWhere((o) => o.card.id == s.current.card.id);
@@ -31,10 +31,60 @@ void main() {
         final options = session.current.options;
         expect(options.length, 4);
         expect(options.map((o) => o.key).toSet().length, 4);
-        expect(options.where((o) => o.card.id == session.current.card.id), hasLength(1));
+        expect(
+          options.where((o) => o.card.id == session.current.card.id),
+          hasLength(1),
+        );
         session.answer(_correct(session));
         session.advance();
       }
+    });
+
+    test('wrong answers come from similar cards, not random ones', () {
+      final cards = [
+        FlashCard(
+          id: 'q',
+          word: 'Stockholms blodbad',
+          description: 'Kristian II lät avrätta biskopar i Stockholm 1520',
+        ),
+        FlashCard(
+          id: 'n1',
+          word: 'Kristian Tyrann',
+          description: 'Kristian II lät avrätta fler biskopar efter blodbadet',
+        ),
+        FlashCard(
+          id: 'n2',
+          word: 'Sturemorden',
+          description: 'Erik XIV lät avrätta män ur släkten Sture i Stockholm',
+        ),
+        FlashCard(
+          id: 'n3',
+          word: 'Kristina Gyllenstierna',
+          description: 'Kristian II belägrade Stockholm och Kristina gav upp',
+        ),
+        for (var i = 0; i < 8; i++)
+          FlashCard(id: 'far$i', word: 'zzz$i', description: 'qxq$i'),
+      ];
+      var near = 0, total = 0;
+      for (var seed = 0; seed < 40; seed++) {
+        final session = StudySession(
+          cards: cards,
+          mode: StudyMode.words,
+          random: Random(seed),
+        );
+        while (!session.isFinished) {
+          if (session.current.card.id == 'q') {
+            for (final o in session.current.options) {
+              if (o.card.id == 'q') continue;
+              total++;
+              if (o.card.id.startsWith('n')) near++;
+            }
+          }
+          session.answer(_correct(session));
+          session.advance();
+        }
+      }
+      expect(near / total, greaterThan(0.6));
     });
 
     test('use fewer options in small decks', () {
@@ -65,17 +115,26 @@ void main() {
       final session = StudySession(cards: _cards(6), mode: StudyMode.words);
       while (!session.isFinished) {
         expect(session.current.promptSide, CardSide.word);
-        expect(session.current.options.every((o) => o.side == CardSide.description), isTrue);
+        expect(
+          session.current.options.every((o) => o.side == CardSide.description),
+          isTrue,
+        );
         session.answer(_correct(session));
         session.advance();
       }
     });
 
     test('descriptions mode always prompts with the description', () {
-      final session = StudySession(cards: _cards(6), mode: StudyMode.descriptions);
+      final session = StudySession(
+        cards: _cards(6),
+        mode: StudyMode.descriptions,
+      );
       while (!session.isFinished) {
         expect(session.current.promptSide, CardSide.description);
-        expect(session.current.options.every((o) => o.side == CardSide.word), isTrue);
+        expect(
+          session.current.options.every((o) => o.side == CardSide.word),
+          isTrue,
+        );
         session.answer(_correct(session));
         session.advance();
       }
@@ -114,7 +173,9 @@ void main() {
     }
 
     test('card order differs between rounds', () {
-      final orders = {for (var seed = 0; seed < 5; seed++) order(seed).join(',')};
+      final orders = {
+        for (var seed = 0; seed < 5; seed++) order(seed).join(','),
+      };
       expect(orders.length, greaterThan(1));
     });
 
@@ -140,7 +201,11 @@ void main() {
     });
 
     test('count limits the round length', () {
-      final session = StudySession(cards: _cards(10), mode: StudyMode.words, count: 5);
+      final session = StudySession(
+        cards: _cards(10),
+        mode: StudyMode.words,
+        count: 5,
+      );
       var shown = 0;
       while (!session.isFinished) {
         shown++;
@@ -257,14 +322,14 @@ void main() {
 
   group('spaced repetition', () {
     List<FlashCard> leveled() => [
-          for (var i = 0; i < 10; i++)
-            FlashCard(
-              id: 'id$i',
-              word: 'word$i',
-              description: 'desc$i',
-              level: i < 2 ? 0 : 4,
-            ),
-        ];
+      for (var i = 0; i < 10; i++)
+        FlashCard(
+          id: 'id$i',
+          word: 'word$i',
+          description: 'desc$i',
+          level: i < 2 ? 0 : 4,
+        ),
+    ];
 
     test('tricky cards are picked more often when the round is short', () {
       var trickyPicks = 0;
@@ -284,12 +349,14 @@ void main() {
     test('every card can still be picked', () {
       final seen = <String>{};
       for (var seed = 0; seed < 400; seed++) {
-        seen.add(StudySession(
-          cards: leveled(),
-          mode: StudyMode.words,
-          count: 1,
-          random: Random(seed),
-        ).current.card.id);
+        seen.add(
+          StudySession(
+            cards: leveled(),
+            mode: StudyMode.words,
+            count: 1,
+            random: Random(seed),
+          ).current.card.id,
+        );
       }
       expect(seen.length, 10);
     });

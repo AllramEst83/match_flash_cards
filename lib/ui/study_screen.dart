@@ -152,8 +152,21 @@ class _StudyScreenState extends State<StudyScreen> {
   void _backToDeck() => Navigator.of(context)
       .popUntil((route) => route.settings.name == DeckEditorScreen.routeName);
 
+  /// These screens have no app bar, so the status bar sits on the pale page
+  /// background and needs dark icons.
+  static const _darkStatusBar = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light,
+  );
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
+    value: _darkStatusBar,
+    child: _buildScreen(context),
+  );
+
+  Widget _buildScreen(BuildContext context) {
     final deck = widget.repository.deckById(widget.deckId)!;
     if (_session.isFinished) {
       return Scaffold(

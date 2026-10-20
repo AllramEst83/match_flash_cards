@@ -91,9 +91,9 @@ class StudySession {
     int? count,
     bool onlyTricky = false,
     Random? random,
-  })  : assert(cards.length >= 2, 'A round needs at least two cards'),
-        _allCards = List.of(cards),
-        _random = random ?? Random() {
+  }) : assert(cards.length >= 2, 'A round needs at least two cards'),
+       _allCards = List.of(cards),
+       _random = random ?? Random() {
     var pool = List.of(cards);
     if (onlyTricky) {
       final tricky = pool.where((c) => c.isTricky).toList();
@@ -250,13 +250,47 @@ class StudySession {
     final correct = AnswerOption(card, answerSide);
     final seen = {correct.key};
     final options = [correct];
+    // Wrong answers that resemble the right one (same topic, similar length)
+    // are hard to dismiss at a glance. A few of the best matches are picked
+    // at random, so the same card does not always get the same company.
     final others = _allCards.where((c) => c.id != card.id).toList()
       ..shuffle(_random);
-    for (final other in others) {
+    final scores = {
+      for (final other in others)
+        other.id: _similarity(card, other, answerSide),
+    };
+    others.sort((a, b) => scores[b.id]!.compareTo(scores[a.id]!));
+    final pool = others.take(maxOptions).toList()..shuffle(_random);
+    final rest = others.skip(pool.length);
+    for (final other in [...pool, ...rest]) {
       if (options.length >= maxOptions) break;
       final option = AnswerOption(other, answerSide);
       if (seen.add(option.key)) options.add(option);
     }
     return options..shuffle(_random);
   }
+
+  /// How alike two cards are: shared words (both sides) and answer length.
+  static double _similarity(FlashCard a, FlashCard b, CardSide answerSide) {
+    final wordsA = _words('${a.word} ${a.description}');
+    final wordsB = _words('${b.word} ${b.description}');
+    final union = wordsA.union(wordsB).length;
+    final overlap = union == 0
+        ? 0.0
+        : wordsA.intersection(wordsB).length / union;
+    int length(FlashCard c) =>
+        (answerSide == CardSide.word ? c.word : c.description).length;
+    final la = length(a), lb = length(b);
+    final closeness = la == 0 && lb == 0
+        ? 1.0
+        : 1 - (la - lb).abs() / (la > lb ? la : lb);
+    return overlap * 2 + closeness;
+  }
+
+  static Set<String> _words(String text) => {
+    for (final w in text.toLowerCase().split(
+      RegExp(r'[^\p{L}\p{N}]+', unicode: true),
+    ))
+      if (w.length > 3) w,
+  };
 }

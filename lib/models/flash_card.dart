@@ -11,12 +11,12 @@ class FlashCard {
   });
 
   factory FlashCard.fromJson(Map<String, dynamic> json) => FlashCard(
-        id: json['id'] as String,
-        word: json['word'] as String,
-        description: json['description'] as String? ?? '',
-        imageBase64: json['image'] as String?,
-        level: json['level'] as int? ?? 0,
-      );
+    id: json['id'] as String,
+    word: json['word'] as String,
+    description: json['description'] as String? ?? '',
+    imageBase64: json['image'] as String?,
+    level: json['level'] as int? ?? 0,
+  );
 
   final String id;
   final String word;
@@ -50,20 +50,19 @@ class FlashCard {
     String? imageBase64,
     bool clearImage = false,
     int? level,
-  }) =>
-      FlashCard(
-        id: id,
-        word: word ?? this.word,
-        description: description ?? this.description,
-        imageBase64: clearImage ? null : (imageBase64 ?? this.imageBase64),
-        level: level ?? this.level,
-      );
+  }) => FlashCard(
+    id: id,
+    word: word ?? this.word,
+    description: description ?? this.description,
+    imageBase64: clearImage ? null : (imageBase64 ?? this.imageBase64),
+    level: level ?? this.level,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'word': word,
-        'description': description,
-        if (imageBase64 != null) 'image': imageBase64,
-        if (level != 0) 'level': level,
-      };
+    'id': id,
+    'word': word,
+    'description': description,
+    if (imageBase64 != null) 'image': imageBase64,
+    if (level != 0) 'level': level,
+  };
 }

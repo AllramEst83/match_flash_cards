@@ -19,17 +19,18 @@ class MatchFlashCardsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF7C4DFF),
-      brightness: Brightness.light,
-    ).copyWith(
-      // The icon's purple: more vivid than the seeded one, 5.7:1 with white.
-      primary: const Color(0xFF6C40F5),
-      onPrimary: Colors.white,
-      // Dark text everywhere, not Material's default greys.
-      onSurface: ink,
-      onSurfaceVariant: inkSoft,
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: const Color(0xFF7C4DFF),
+          brightness: Brightness.light,
+        ).copyWith(
+          // The icon's purple: more vivid than the seeded one, 5.7:1 with white.
+          primary: const Color(0xFF6C40F5),
+          onPrimary: Colors.white,
+          // Dark text everywhere, not Material's default greys.
+          onSurface: ink,
+          onSurfaceVariant: inkSoft,
+        );
     return ListenableBuilder(
       listenable: settings,
       builder: (context, _) => MaterialApp(

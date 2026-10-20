@@ -3,10 +3,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsController extends ChangeNotifier {
   SettingsController(this._prefs)
-      : _locale = switch (_prefs.getString(_localeKey)) {
-          final code? => Locale(code),
-          null => null,
-        };
+    : _locale = switch (_prefs.getString(_localeKey)) {
+        final code? => Locale(code),
+        null => null,
+      };
 
   static const _localeKey = 'locale';
 

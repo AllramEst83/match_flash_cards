@@ -15,7 +15,12 @@ void main() {
       bestStars: 2,
       bestPoints: 40,
       cards: [
-        FlashCard(id: 'c1', word: 'Cat', description: 'Purrs', imageBase64: image),
+        FlashCard(
+          id: 'c1',
+          word: 'Cat',
+          description: 'Purrs',
+          imageBase64: image,
+        ),
         FlashCard(id: 'c2', word: 'Dog', description: 'Barks'),
       ],
     );
@@ -33,20 +38,27 @@ void main() {
   });
 
   group('DeckRepository', () {
-    Future<DeckRepository> create([Map<String, Object> values = const {}]) async {
+    Future<DeckRepository> create([
+      Map<String, Object> values = const {},
+    ]) async {
       SharedPreferences.setMockInitialValues(values);
       return DeckRepository(await SharedPreferences.getInstance());
     }
 
     test('seeds the bundled decks on first launch only', () async {
       final repository = await create();
-      expect(repository.decks.map((d) => d.name),
-          ['Materia och material', 'Vasatiden']);
+      expect(repository.decks.map((d) => d.name), [
+        'Materia och material',
+        'Vasatiden',
+      ]);
       expect(repository.decks.first.cards, hasLength(10));
       expect(repository.decks.last.cards, hasLength(26));
       final prefs = await SharedPreferences.getInstance();
       final reloaded = DeckRepository(prefs);
-      expect(reloaded.decks.map((d) => d.id), repository.decks.map((d) => d.id));
+      expect(
+        reloaded.decks.map((d) => d.id),
+        repository.decks.map((d) => d.id),
+      );
     });
 
     test('adds newly bundled decks to an existing install once', () async {
@@ -56,8 +68,10 @@ void main() {
       final old = await create({
         'decks_v1': jsonEncode([materia.toJson()]),
       });
-      expect(old.decks.map((d) => d.name),
-          ['Materia och material', 'Vasatiden']);
+      expect(old.decks.map((d) => d.name), [
+        'Materia och material',
+        'Vasatiden',
+      ]);
       old.deleteDeck(old.decks.last.id);
       final again = DeckRepository(await SharedPreferences.getInstance());
       expect(again.decks.map((d) => d.name), ['Materia och material']);

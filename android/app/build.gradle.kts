@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.match_flash_cards"
+    namespace = "com.codedbykay.match_flash_cards"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.match_flash_cards"
+        applicationId = "com.codedbykay.match_flash_cards"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

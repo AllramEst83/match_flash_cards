@@ -8,7 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 late SettingsController _settings;
 
-Future<DeckRepository> _repository([Map<String, Object> values = const {}]) async {
+Future<DeckRepository> _repository([
+  Map<String, Object> values = const {},
+]) async {
   SharedPreferences.setMockInitialValues(values);
   final prefs = await SharedPreferences.getInstance();
   _settings = SettingsController(prefs);
@@ -38,7 +40,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Add 1 more card to start playing!'), findsOneWidget);
-    final study = tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Study'));
+    final study = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Study'),
+    );
     expect(study.onPressed, isNull);
   });
 
@@ -76,8 +80,9 @@ void main() {
     await tester.pump(const Duration(seconds: 4));
   });
 
-  testWidgets('offers tricky-word practice once some cards are known',
-      (tester) async {
+  testWidgets('offers tricky-word practice once some cards are known', (
+    tester,
+  ) async {
     final repository = await _repository();
     final deck = repository.addDeck('Mixed');
     for (final word in ['A', 'B', 'C', 'D']) {
@@ -85,7 +90,10 @@ void main() {
     }
     final cards = repository.deckById(deck.id)!.cards;
     for (var i = 0; i < 4; i++) {
-      repository.recordCardOutcomes(deck.id, {cards[0].id: true, cards[1].id: true});
+      repository.recordCardOutcomes(deck.id, {
+        cards[0].id: true,
+        cards[1].id: true,
+      });
     }
     await tester.pumpWidget(_app(repository));
     await tester.tap(find.text('Mixed'));
@@ -96,8 +104,9 @@ void main() {
     expect(find.text('Tricky words (2)'), findsOneWidget);
   });
 
-  testWidgets('long questions and answers fit a small phone screen',
-      (tester) async {
+  testWidgets('long questions and answers fit a small phone screen', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(360 * 3, 640 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
@@ -130,7 +139,9 @@ void main() {
         of: find.text(asked.word),
         matching: find.byType(AnswerTile),
       );
-      final answer = tile.evaluate().isNotEmpty ? asked.word : asked.description;
+      final answer = tile.evaluate().isNotEmpty
+          ? asked.word
+          : asked.description;
       await tester.ensureVisible(find.text(answer));
       await tester.tap(find.text(answer));
       await tester.pump(const Duration(seconds: 1));
@@ -139,8 +150,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('switching language in settings updates the app at once',
-      (tester) async {
+  testWidgets('switching language in settings updates the app at once', (
+    tester,
+  ) async {
     final repository = await _repository();
     await tester.pumpWidget(_app(repository));
 
