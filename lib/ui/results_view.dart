@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../logic/study_session.dart';
 import 'widgets/confetti.dart';
 import 'widgets/star_row.dart';
@@ -22,16 +23,16 @@ class ResultsView extends StatelessWidget {
   final VoidCallback onPlayAgain;
   final VoidCallback onBackToDeck;
 
-  static const _messages = {
-    3: ['Perfect round!', 'You are a star!', 'Wow, amazing!'],
-    2: ['Great work!', 'Almost perfect!', 'Nice going!'],
-    1: ['Good try! Play again to earn more stars.', 'Keep practicing!'],
-  };
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final options = _messages[result.stars]!;
+    final l10n = AppLocalizations.of(context);
+    final messages = {
+      3: [l10n.resultPerfect1, l10n.resultPerfect2, l10n.resultPerfect3],
+      2: [l10n.resultGood1, l10n.resultGood2, l10n.resultGood3],
+      1: [l10n.resultTry1, l10n.resultTry2],
+    };
+    final options = messages[result.stars]!;
     final message = options[Random().nextInt(options.length)];
     return Stack(
       children: [
@@ -56,21 +57,24 @@ class ResultsView extends StatelessWidget {
                     child: Chip(
                       avatar: const Icon(Icons.emoji_events_rounded),
                       label: Text(
-                        'New best!',
+                        l10n.newBest,
                         style: theme.textTheme.titleMedium,
                       ),
                     ),
                   ),
                 const SizedBox(height: 24),
-                Text('${result.points} points', style: theme.textTheme.headlineSmall),
+                Text(
+                  l10n.pointsTotal(result.points),
+                  style: theme.textTheme.headlineSmall,
+                ),
                 const SizedBox(height: 8),
                 Text(
-                  '${result.firstTryCorrect} of ${result.total} right on the first try',
+                  l10n.firstTryScore(result.firstTryCorrect, result.total),
                   style: theme.textTheme.titleMedium,
                 ),
                 if (result.bestStreak >= 2)
                   Text(
-                    'Best streak: 🔥 ${result.bestStreak}',
+                    l10n.bestStreak(result.bestStreak),
                     style: theme.textTheme.titleMedium,
                   ),
                 const SizedBox(height: 32),
@@ -81,7 +85,7 @@ class ResultsView extends StatelessWidget {
                   ),
                   onPressed: onPlayAgain,
                   icon: const Icon(Icons.replay_rounded),
-                  label: const Text('Play again'),
+                  label: Text(l10n.playAgain),
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton(
@@ -90,7 +94,7 @@ class ResultsView extends StatelessWidget {
                     textStyle: const TextStyle(fontSize: 20),
                   ),
                   onPressed: onBackToDeck,
-                  child: Text('Back to $deckName'),
+                  child: Text(l10n.backToDeck(deckName)),
                 ),
               ],
             ),

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../data/deck_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/flash_card.dart';
 
 class CardFormScreen extends StatefulWidget {
@@ -43,10 +44,11 @@ class _CardFormScreenState extends State<CardFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final editing = widget.card != null;
     final imageBytes = _imageBase64 == null ? null : base64Decode(_imageBase64!);
     return Scaffold(
-      appBar: AppBar(title: Text(editing ? 'Edit card' : 'New card')),
+      appBar: AppBar(title: Text(editing ? l10n.editCard : l10n.newCard)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -57,12 +59,12 @@ class _CardFormScreenState extends State<CardFormScreen> {
               autofocus: !editing,
               textCapitalization: TextCapitalization.sentences,
               style: const TextStyle(fontSize: 20),
-              decoration: const InputDecoration(
-                labelText: 'Word',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.wordLabel,
+                border: const OutlineInputBorder(),
               ),
               validator: (value) => (value == null || value.trim().isEmpty)
-                  ? 'Type the word'
+                  ? l10n.typeTheWord
                   : null,
             ),
             const SizedBox(height: 16),
@@ -72,9 +74,9 @@ class _CardFormScreenState extends State<CardFormScreen> {
               maxLines: 4,
               textCapitalization: TextCapitalization.sentences,
               style: const TextStyle(fontSize: 20),
-              decoration: const InputDecoration(
-                labelText: 'What it means',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.descriptionLabel,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
@@ -90,13 +92,15 @@ class _CardFormScreenState extends State<CardFormScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _choosePicture,
                     icon: const Icon(Icons.add_a_photo_outlined),
-                    label: Text(imageBytes == null ? 'Add picture' : 'Change picture'),
+                    label: Text(
+                      imageBytes == null ? l10n.addPicture : l10n.changePicture,
+                    ),
                   ),
                 ),
                 if (imageBytes != null) ...[
                   const SizedBox(width: 8),
                   IconButton(
-                    tooltip: 'Remove picture',
+                    tooltip: l10n.removePicture,
                     onPressed: () => setState(() => _imageBase64 = null),
                     icon: const Icon(Icons.delete_outline),
                   ),
@@ -107,7 +111,7 @@ class _CardFormScreenState extends State<CardFormScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  'Add a description or a picture',
+                  l10n.needDescriptionOrPicture,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
@@ -118,7 +122,7 @@ class _CardFormScreenState extends State<CardFormScreen> {
                 textStyle: const TextStyle(fontSize: 22),
               ),
               onPressed: _save,
-              child: const Text('Save'),
+              child: Text(l10n.save),
             ),
           ],
         ),
@@ -127,6 +131,7 @@ class _CardFormScreenState extends State<CardFormScreen> {
   }
 
   Future<void> _choosePicture() async {
+    final l10n = AppLocalizations.of(context);
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (context) => SafeArea(
@@ -135,12 +140,12 @@ class _CardFormScreenState extends State<CardFormScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choose from gallery'),
+              title: Text(l10n.chooseFromGallery),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Take a photo'),
+              title: Text(l10n.takePhoto),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
           ],
@@ -165,7 +170,7 @@ class _CardFormScreenState extends State<CardFormScreen> {
     } on PlatformException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Couldn't get that picture. Try again!")),
+        SnackBar(content: Text(l10n.pictureError)),
       );
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/deck_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/study_mode.dart';
 import 'palette.dart';
 import 'study_screen.dart';
@@ -31,8 +32,14 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final deck = widget.repository.deckById(widget.deckId);
     if (deck == null) return const Scaffold();
+    final labels = {
+      StudyMode.words: (l10n.modeWords, l10n.modeWordsHint),
+      StudyMode.descriptions: (l10n.modeDescriptions, l10n.modeDescriptionsHint),
+      StudyMode.mix: (l10n.modeMix, l10n.modeMixHint),
+    };
     final total = deck.cards.length;
     final lengths = <int?>[null, for (final n in [5, 10]) if (n < total) n];
 
@@ -42,7 +49,7 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'What do you want to see?',
+            l10n.whatToSee,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 12),
@@ -50,14 +57,15 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
             _ModeTile(
               icon: _icons[mode]!,
               color: playfulColor(mode.index * 2 + 1),
-              mode: mode,
+              label: labels[mode]!.$1,
+              hint: labels[mode]!.$2,
               selected: _mode == mode,
               onTap: () => setState(() => _mode = mode),
             ),
           if (lengths.length > 1) ...[
             const SizedBox(height: 24),
             Text(
-              'How many cards?',
+              l10n.howManyCards,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 12),
@@ -67,7 +75,7 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
                 for (final length in lengths)
                   ChoiceChip(
                     label: Text(
-                      length == null ? 'All $total' : '$length',
+                      length == null ? l10n.allCards(total) : '$length',
                       style: const TextStyle(fontSize: 18),
                     ),
                     selected: _count == length,
@@ -93,7 +101,7 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
               ),
             ),
             icon: const Icon(Icons.rocket_launch_rounded, size: 32),
-            label: const Text('Play!'),
+            label: Text(l10n.play),
           ),
         ],
       ),
@@ -105,14 +113,16 @@ class _ModeTile extends StatelessWidget {
   const _ModeTile({
     required this.icon,
     required this.color,
-    required this.mode,
+    required this.label,
+    required this.hint,
     required this.selected,
     required this.onTap,
   });
 
   final IconData icon;
   final Color color;
-  final StudyMode mode;
+  final String label;
+  final String hint;
   final bool selected;
   final VoidCallback onTap;
 
@@ -135,11 +145,8 @@ class _ModeTile extends StatelessWidget {
           backgroundColor: color,
           child: Icon(icon, size: 32, color: Colors.white),
         ),
-        title: Text(
-          mode.label,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        subtitle: Text(mode.hint),
+        title: Text(label, style: Theme.of(context).textTheme.titleLarge),
+        subtitle: Text(hint),
         trailing: selected
             ? Icon(Icons.check_circle_rounded, color: color, size: 30)
             : null,

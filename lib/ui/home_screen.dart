@@ -1,33 +1,55 @@
 import 'package:flutter/material.dart';
 
 import '../data/deck_repository.dart';
+import '../data/settings_controller.dart';
+import '../l10n/app_localizations.dart';
 import '../models/deck.dart';
 import 'deck_editor_screen.dart';
 import 'palette.dart';
+import 'settings_screen.dart';
 import 'widgets/star_row.dart';
 import 'widgets/text_prompt.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, required this.repository});
+  const HomeScreen({
+    super.key,
+    required this.repository,
+    required this.settings,
+  });
 
   final DeckRepository repository;
+  final SettingsController settings;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('My Decks')),
+      appBar: AppBar(
+        title: Text(l10n.myDecks),
+        actions: [
+          IconButton(
+            tooltip: l10n.settings,
+            icon: const Icon(Icons.settings_rounded),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => SettingsScreen(settings: settings),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: ListenableBuilder(
         listenable: repository,
         builder: (context, _) {
           final decks = repository.decks;
           if (decks.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
+                padding: const EdgeInsets.all(32),
                 child: Text(
-                  'No decks yet!\nTap "New deck" to make your first one.',
+                  l10n.noDecks,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 20),
+                  style: const TextStyle(fontSize: 20),
                 ),
               ),
             );
@@ -45,16 +67,17 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _createDeck(context),
         icon: const Icon(Icons.add),
-        label: const Text('New deck'),
+        label: Text(l10n.newDeck),
       ),
     );
   }
 
   Future<void> _createDeck(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     final name = await promptForText(
       context,
-      title: 'Name your deck',
-      hint: 'Animals, Spelling week 3, ...',
+      title: l10n.nameYourDeck,
+      hint: l10n.deckNameHint,
     );
     if (name == null || !context.mounted) return;
     final deck = repository.addDeck(name);
@@ -79,7 +102,7 @@ class _DeckTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final count = deck.cards.length;
+    final l10n = AppLocalizations.of(context);
     final color = colorForId(deck.id);
     return Card(
       margin: const EdgeInsets.only(top: 12),
@@ -103,18 +126,18 @@ class _DeckTile extends StatelessWidget {
           padding: const EdgeInsets.only(top: 6),
           child: Row(
             children: [
-              Text(count == 1 ? '1 card' : '$count cards'),
+              Text(l10n.cardCount(deck.cards.length)),
               const SizedBox(width: 12),
               StarRow(stars: deck.bestStars),
-              if (deck.bestPoints > 0) Text(' ${deck.bestPoints} pts'),
+              if (deck.bestPoints > 0) Text(' ${l10n.bestPoints(deck.bestPoints)}'),
             ],
           ),
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) => _onMenu(context, value),
-          itemBuilder: (context) => const [
-            PopupMenuItem(value: 'rename', child: Text('Rename')),
-            PopupMenuItem(value: 'delete', child: Text('Delete')),
+          itemBuilder: (context) => [
+            PopupMenuItem(value: 'rename', child: Text(l10n.rename)),
+            PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
           ],
         ),
         onTap: () => openDeck(context, repository, deck.id),
@@ -123,20 +146,21 @@ class _DeckTile extends StatelessWidget {
   }
 
   Future<void> _onMenu(BuildContext context, String value) async {
+    final l10n = AppLocalizations.of(context);
     if (value == 'rename') {
       final name = await promptForText(
         context,
-        title: 'Rename deck',
+        title: l10n.renameDeck,
         initial: deck.name,
       );
       if (name != null) repository.renameDeck(deck.id, name);
     } else {
       final sure = await confirm(
         context,
-        title: 'Delete "${deck.name}"?',
-        message: 'All of its cards will be deleted too.',
-        confirmLabel: 'Delete',
-        cancelLabel: 'Keep',
+        title: l10n.deleteDeckTitle(deck.name),
+        message: l10n.deleteDeckMessage,
+        confirmLabel: l10n.delete,
+        cancelLabel: l10n.keep,
       );
       if (sure) repository.deleteDeck(deck.id);
     }

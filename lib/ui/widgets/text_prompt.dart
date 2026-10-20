@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
+
 /// Asks for a single line of text. Returns null if cancelled or left empty.
 Future<String?> promptForText(
   BuildContext context, {
@@ -8,6 +10,7 @@ Future<String?> promptForText(
   String hint = '',
 }) {
   final controller = TextEditingController(text: initial);
+  final l10n = AppLocalizations.of(context);
   return showDialog<String>(
     context: context,
     builder: (context) => AlertDialog(
@@ -22,11 +25,11 @@ Future<String?> promptForText(
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, controller.text.trim()),
-          child: const Text('OK'),
+          child: Text(l10n.ok),
         ),
       ],
     ),

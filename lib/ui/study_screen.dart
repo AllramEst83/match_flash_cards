@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../data/deck_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../logic/study_session.dart';
 import '../models/study_mode.dart';
 import 'deck_editor_screen.dart';
@@ -32,15 +33,6 @@ class StudyScreen extends StatefulWidget {
 }
 
 class _StudyScreenState extends State<StudyScreen> {
-  static const _cheers = [
-    'Great job!',
-    'You got it!',
-    'Awesome!',
-    'Nice one!',
-    'Super!',
-    'Yes!',
-  ];
-
   final _random = Random();
   late StudySession _session;
   final _wrong = <String>{};
@@ -71,22 +63,31 @@ class _StudyScreenState extends State<StudyScreen> {
 
   Future<void> _onTap(AnswerOption option) async {
     if (_locked || _wrong.contains(option.key)) return;
+    final l10n = AppLocalizations.of(context);
     final result = _session.answer(option);
 
     if (!result.correct) {
       setState(() {
         _wrong.add(option.key);
-        _message = 'Try again!';
+        _message = l10n.tryAgain;
       });
       return;
     }
 
+    final cheers = [
+      l10n.cheer1,
+      l10n.cheer2,
+      l10n.cheer3,
+      l10n.cheer4,
+      l10n.cheer5,
+      l10n.cheer6,
+    ];
     setState(() {
       _locked = true;
       _correct = option.key;
       _message = result.streakBonus > 0
-          ? '🔥 ${result.streak} in a row! +${result.streakBonus} bonus'
-          : _cheers[_random.nextInt(_cheers.length)];
+          ? l10n.streakBonus(result.streak, result.streakBonus)
+          : cheers[_random.nextInt(cheers.length)];
     });
     await Future<void>.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
@@ -109,12 +110,13 @@ class _StudyScreenState extends State<StudyScreen> {
   }
 
   Future<void> _confirmQuit() async {
+    final l10n = AppLocalizations.of(context);
     final quit = await confirm(
       context,
-      title: 'Stop playing?',
-      message: 'Your points for this round will be lost.',
-      confirmLabel: 'Stop',
-      cancelLabel: 'Keep playing',
+      title: l10n.stopTitle,
+      message: l10n.stopMessage,
+      confirmLabel: l10n.stop,
+      cancelLabel: l10n.keepPlaying,
     );
     if (quit && mounted) Navigator.of(context).pop();
   }
@@ -207,7 +209,7 @@ class _StudyScreenState extends State<StudyScreen> {
             height: 40,
             child: Center(
               child: Text(
-                _message ?? 'Which one matches?',
+                _message ?? AppLocalizations.of(context).whichMatches,
                 style: theme.textTheme.titleMedium,
               ),
             ),
@@ -263,7 +265,7 @@ class _Header extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            tooltip: 'Stop playing',
+            tooltip: AppLocalizations.of(context).stopTooltip,
             onPressed: onClose,
             icon: const Icon(Icons.close_rounded),
           ),
