@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/settings_controller.dart';
 import '../l10n/app_localizations.dart';
 import 'palette.dart';
+import 'widgets/color_card.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, required this.settings});
@@ -57,20 +58,20 @@ class _LanguageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return ColorCard(
+      color: color,
+      selected: selected,
       margin: const EdgeInsets.only(bottom: 12),
-      color: color.withValues(alpha: selected ? 0.22 : 0.08),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: selected ? color : Colors.transparent,
-          width: 3,
-        ),
-      ),
       child: ListTile(
         minVerticalPadding: 16,
         leading: Text(flag, style: const TextStyle(fontSize: 36)),
-        title: Text(label, style: Theme.of(context).textTheme.titleLarge),
+        title: Text(
+          label,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
         trailing: selected
             ? Icon(Icons.check_circle_rounded, color: color, size: 30)
             : null,

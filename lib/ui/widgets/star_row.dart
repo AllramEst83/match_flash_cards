@@ -25,11 +25,24 @@ class StarRow extends StatelessWidget {
   }
 
   Widget _star(bool filled, int index) {
-    final icon = Icon(
-      filled ? Icons.star_rounded : Icons.star_outline_rounded,
-      size: size,
-      color: filled ? Colors.amber : Colors.grey,
-    );
+    // The dark outline keeps a filled star visible on pale backgrounds.
+    final icon = filled
+        ? Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(Icons.star_rounded, size: size, color: Colors.amber),
+              Icon(
+                Icons.star_outline_rounded,
+                size: size,
+                color: const Color(0xFF9A6200),
+              ),
+            ],
+          )
+        : Icon(
+            Icons.star_outline_rounded,
+            size: size,
+            color: Colors.grey.shade700,
+          );
     if (!animate || !filled) return icon;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),

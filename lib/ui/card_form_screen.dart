@@ -61,7 +61,6 @@ class _CardFormScreenState extends State<CardFormScreen> {
               style: const TextStyle(fontSize: 20),
               decoration: InputDecoration(
                 labelText: l10n.wordLabel,
-                border: const OutlineInputBorder(),
               ),
               validator: (value) => (value == null || value.trim().isEmpty)
                   ? l10n.typeTheWord
@@ -76,7 +75,6 @@ class _CardFormScreenState extends State<CardFormScreen> {
               style: const TextStyle(fontSize: 20),
               decoration: InputDecoration(
                 labelText: l10n.descriptionLabel,
-                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),

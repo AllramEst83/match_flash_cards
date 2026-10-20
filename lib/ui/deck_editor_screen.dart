@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/flash_card.dart';
 import 'card_form_screen.dart';
 import 'palette.dart';
+import 'widgets/color_card.dart';
 import 'study_setup_screen.dart';
 import 'widgets/text_prompt.dart';
 
@@ -50,7 +51,7 @@ class DeckEditorScreen extends StatelessWidget {
           body: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: SizedBox(
                   width: double.infinity,
                   child: FilledButton.tonalIcon(
@@ -175,9 +176,9 @@ class _CardTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final image = card.imageBytes;
     final color = colorForId(card.id);
-    return Card(
+    return ColorCard(
       margin: const EdgeInsets.only(top: 8),
-      color: color.withValues(alpha: 0.12),
+      color: color,
       child: ListTile(
         leading: image == null
             ? CircleAvatar(
@@ -196,11 +197,22 @@ class _CardTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: Image.memory(image, width: 48, height: 48, fit: BoxFit.cover),
               ),
-        title: Text(card.word, style: Theme.of(context).textTheme.titleMedium),
-        subtitle: card.description.isEmpty ? null : Text(card.description),
+        title: Text(
+          card.word,
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(color: ink, fontWeight: FontWeight.w700),
+        ),
+        subtitle: card.description.isEmpty
+            ? null
+            : Text(
+                card.description,
+                style: const TextStyle(color: inkSoft, fontSize: 15, height: 1.3),
+              ),
         trailing: IconButton(
           tooltip: AppLocalizations.of(context).deleteCardTooltip,
-          icon: const Icon(Icons.delete_outline),
+          icon: const Icon(Icons.delete_outline, color: ink),
           onPressed: onDelete,
         ),
         onTap: onEdit,

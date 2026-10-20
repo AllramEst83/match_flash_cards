@@ -7,6 +7,7 @@ import '../models/deck.dart';
 import 'deck_editor_screen.dart';
 import 'palette.dart';
 import 'settings_screen.dart';
+import 'widgets/color_card.dart';
 import 'widgets/star_row.dart';
 import 'widgets/text_prompt.dart';
 
@@ -104,9 +105,8 @@ class _DeckTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final color = colorForId(deck.id);
-    return Card(
-      margin: const EdgeInsets.only(top: 12),
-      color: color.withValues(alpha: 0.14),
+    return ColorCard(
+      color: color,
       child: ListTile(
         contentPadding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
         leading: CircleAvatar(
@@ -120,16 +120,25 @@ class _DeckTile extends StatelessWidget {
         ),
         title: Text(
           deck.name,
-          style: Theme.of(context).textTheme.titleLarge,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.w700),
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6),
           child: Row(
             children: [
-              Text(l10n.cardCount(deck.cards.length)),
+              Text(
+                l10n.cardCount(deck.cards.length),
+                style: const TextStyle(color: inkSoft, fontSize: 15),
+              ),
               const SizedBox(width: 12),
               StarRow(stars: deck.bestStars),
-              if (deck.bestPoints > 0) Text(' ${l10n.bestPoints(deck.bestPoints)}'),
+              if (deck.bestPoints > 0) Text(
+                  ' ${l10n.bestPoints(deck.bestPoints)}',
+                  style: const TextStyle(color: inkSoft, fontSize: 15),
+                ),
             ],
           ),
         ),

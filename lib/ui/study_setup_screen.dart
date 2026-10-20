@@ -4,6 +4,7 @@ import '../data/deck_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../models/study_mode.dart';
 import 'palette.dart';
+import 'widgets/color_card.dart';
 import 'study_screen.dart';
 
 class StudySetupScreen extends StatefulWidget {
@@ -50,7 +51,10 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
         children: [
           Text(
             l10n.whatToSee,
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           for (final mode in StudyMode.values)
@@ -66,7 +70,10 @@ class _StudySetupScreenState extends State<StudySetupScreen> {
             const SizedBox(height: 24),
             Text(
               l10n.howManyCards,
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -128,16 +135,10 @@ class _ModeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return ColorCard(
+      color: color,
+      selected: selected,
       margin: const EdgeInsets.only(bottom: 12),
-      color: color.withValues(alpha: selected ? 0.22 : 0.08),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: selected ? color : Colors.transparent,
-          width: 3,
-        ),
-      ),
       child: ListTile(
         minVerticalPadding: 16,
         leading: CircleAvatar(
@@ -145,8 +146,14 @@ class _ModeTile extends StatelessWidget {
           backgroundColor: color,
           child: Icon(icon, size: 32, color: Colors.white),
         ),
-        title: Text(label, style: Theme.of(context).textTheme.titleLarge),
-        subtitle: Text(hint),
+        title: Text(
+          label,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        subtitle: Text(hint, style: const TextStyle(fontSize: 15)),
         trailing: selected
             ? Icon(Icons.check_circle_rounded, color: color, size: 30)
             : null,

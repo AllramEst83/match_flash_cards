@@ -5,6 +5,7 @@ import 'data/deck_repository.dart';
 import 'data/settings_controller.dart';
 import 'l10n/app_localizations.dart';
 import 'ui/home_screen.dart';
+import 'ui/palette.dart';
 
 class MatchFlashCardsApp extends StatelessWidget {
   const MatchFlashCardsApp({
@@ -21,6 +22,13 @@ class MatchFlashCardsApp extends StatelessWidget {
     final scheme = ColorScheme.fromSeed(
       seedColor: const Color(0xFF7C4DFF),
       brightness: Brightness.light,
+    ).copyWith(
+      // The icon's purple: more vivid than the seeded one, 5.7:1 with white.
+      primary: const Color(0xFF6C40F5),
+      onPrimary: Colors.white,
+      // Dark text everywhere, not Material's default greys.
+      onSurface: ink,
+      onSurfaceVariant: inkSoft,
     );
     return ListenableBuilder(
       listenable: settings,
@@ -39,6 +47,36 @@ class MatchFlashCardsApp extends StatelessWidget {
           colorScheme: scheme,
           useMaterial3: true,
           scaffoldBackgroundColor: const Color(0xFFF6F1FF),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: scheme.primary, width: 2),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: scheme.primary, width: 2),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: scheme.primary, width: 3),
+            ),
+            labelStyle: const TextStyle(color: inkSoft),
+          ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: scheme.primary,
+              side: BorderSide(color: scheme.primary, width: 2),
+            ),
+          ),
+          chipTheme: ChipThemeData(
+            backgroundColor: Colors.white,
+            selectedColor: tintOf(scheme.primary, 0.26),
+            side: BorderSide(color: scheme.primary, width: 2),
+            labelStyle: const TextStyle(color: ink),
+            checkmarkColor: scheme.primary,
+          ),
           appBarTheme: AppBarTheme(
             backgroundColor: scheme.primary,
             foregroundColor: scheme.onPrimary,

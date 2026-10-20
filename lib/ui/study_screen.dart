@@ -191,7 +191,7 @@ class _StudyScreenState extends State<StudyScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFF7C4DFF), Color(0xFFE94F6C)],
+                    colors: [Color(0xFF6C40F5), Color(0xFFD81B60)],
                   ),
                 ),
                 child: OptionContent(
@@ -210,7 +210,8 @@ class _StudyScreenState extends State<StudyScreen> {
             child: Center(
               child: Text(
                 _message ?? AppLocalizations.of(context).whichMatches,
-                style: theme.textTheme.titleMedium,
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -278,8 +279,8 @@ class _Header extends StatelessWidget {
                 builder: (context, value, _) => LinearProgressIndicator(
                   value: value,
                   minHeight: 14,
-                  color: Colors.orange,
-                  backgroundColor: Colors.orange.shade100,
+                  color: const Color(0xFFC2410C),
+                  backgroundColor: const Color(0xFFF5E1D8),
                 ),
               ),
             ),
@@ -294,7 +295,7 @@ class _Header extends StatelessWidget {
               ),
             ),
           Chip(
-            avatar: const Icon(Icons.star_rounded, color: Colors.amber),
+            avatar: Icon(Icons.star_rounded, color: Colors.amber.shade800),
             label: Text(
               '${session.points}',
               style: theme.textTheme.titleMedium,

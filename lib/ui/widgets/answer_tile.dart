@@ -50,8 +50,8 @@ class _AnswerTileState extends State<AnswerTile>
   Widget build(BuildContext context) {
     final (background, foreground) = switch (widget.state) {
       TileState.idle => (widget.color, Colors.white),
-      TileState.wrong => (Colors.grey.shade300, Colors.grey.shade600),
-      TileState.correct => (Colors.green.shade400, Colors.white),
+      TileState.wrong => (Colors.grey.shade300, Colors.grey.shade900),
+      TileState.correct => (Colors.green.shade800, Colors.white),
     };
 
     return AnimatedBuilder(

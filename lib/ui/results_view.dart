@@ -55,7 +55,12 @@ class ResultsView extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Chip(
-                      avatar: const Icon(Icons.emoji_events_rounded),
+                      backgroundColor: const Color(0xFFFFF0B3),
+                      side: const BorderSide(color: Color(0xFF9A6200), width: 2),
+                      avatar: const Icon(
+                        Icons.emoji_events_rounded,
+                        color: Color(0xFF9A6200),
+                      ),
                       label: Text(
                         l10n.newBest,
                         style: theme.textTheme.titleMedium,
