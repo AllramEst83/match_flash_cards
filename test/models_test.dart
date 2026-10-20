@@ -38,13 +38,29 @@ void main() {
       return DeckRepository(await SharedPreferences.getInstance());
     }
 
-    test('seeds a sample deck on first launch only', () async {
+    test('seeds the bundled decks on first launch only', () async {
       final repository = await create();
-      expect(repository.decks.single.name, 'Materia och material');
-      expect(repository.decks.single.cards, hasLength(10));
+      expect(repository.decks.map((d) => d.name),
+          ['Materia och material', 'Vasatiden']);
+      expect(repository.decks.first.cards, hasLength(10));
+      expect(repository.decks.last.cards, hasLength(26));
       final prefs = await SharedPreferences.getInstance();
       final reloaded = DeckRepository(prefs);
-      expect(reloaded.decks.single.id, repository.decks.single.id);
+      expect(reloaded.decks.map((d) => d.id), repository.decks.map((d) => d.id));
+    });
+
+    test('adds newly bundled decks to an existing install once', () async {
+      final repository = await create();
+      final materia = repository.decks.first;
+      // An install from before the seeded list existed: only Materia saved.
+      final old = await create({
+        'decks_v1': jsonEncode([materia.toJson()]),
+      });
+      expect(old.decks.map((d) => d.name),
+          ['Materia och material', 'Vasatiden']);
+      old.deleteDeck(old.decks.last.id);
+      final again = DeckRepository(await SharedPreferences.getInstance());
+      expect(again.decks.map((d) => d.name), ['Materia och material']);
     });
 
     test('persists changes', () async {
@@ -60,7 +76,7 @@ void main() {
 
     test('records best results and reports new bests', () async {
       final repository = await create();
-      final id = repository.decks.single.id;
+      final id = repository.decks.first.id;
       expect(repository.recordResult(id, stars: 1, points: 20), isFalse);
       expect(repository.recordResult(id, stars: 1, points: 10), isFalse);
       expect(repository.recordResult(id, stars: 2, points: 30), isTrue);
@@ -70,7 +86,7 @@ void main() {
 
     test('levels cards up on first try and down when missed', () async {
       final repository = await create();
-      final deck = repository.decks.single;
+      final deck = repository.decks.first;
       final [a, b, ...] = deck.cards;
       repository.recordCardOutcomes(deck.id, {a.id: true, b.id: false});
       repository.recordCardOutcomes(deck.id, {a.id: true, b.id: false});

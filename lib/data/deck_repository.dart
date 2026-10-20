@@ -15,6 +15,7 @@ class DeckRepository extends ChangeNotifier {
   }
 
   static const _storageKey = 'decks_v1';
+  static const _seededKey = 'seeded_decks';
 
   final SharedPreferences _prefs;
   List<Deck> _decks = [];
@@ -59,18 +60,17 @@ class DeckRepository extends ChangeNotifier {
   }
 
   void updateCard(String deckId, FlashCard card) => _update(
-        deckId,
-        (deck) => deck.copyWith(
-          cards: [for (final c in deck.cards) c.id == card.id ? card : c],
-        ),
-      );
+    deckId,
+    (deck) => deck.copyWith(
+      cards: [for (final c in deck.cards) c.id == card.id ? card : c],
+    ),
+  );
 
   void deleteCard(String deckId, String cardId) => _update(
-        deckId,
-        (deck) => deck.copyWith(
-          cards: deck.cards.where((c) => c.id != cardId).toList(),
-        ),
-      );
+    deckId,
+    (deck) =>
+        deck.copyWith(cards: deck.cards.where((c) => c.id != cardId).toList()),
+  );
 
   /// Moves each card up a level when it was right first time, and back two
   /// levels when it was missed. [outcomes] maps card id to first-try success.
@@ -112,7 +112,9 @@ class DeckRepository extends ChangeNotifier {
   }
 
   void _update(String deckId, Deck Function(Deck) change) {
-    _decks = [for (final deck in _decks) deck.id == deckId ? change(deck) : deck];
+    _decks = [
+      for (final deck in _decks) deck.id == deckId ? change(deck) : deck,
+    ];
     _commit();
   }
 
@@ -128,18 +130,30 @@ class DeckRepository extends ChangeNotifier {
 
   void _load() {
     final raw = _prefs.getString(_storageKey);
-    if (raw == null) {
-      _decks = [defaultDeck()];
-      _commit();
-      return;
+    // Decks saved before this list existed already have the first bundled one.
+    final seeded =
+        _prefs.getStringList(_seededKey)?.toSet() ??
+        (raw == null ? <String>{} : {'materia'});
+    if (raw != null) {
+      try {
+        _decks = [
+          for (final deck in jsonDecode(raw) as List<dynamic>)
+            Deck.fromJson(deck as Map<String, dynamic>),
+        ];
+      } on Object {
+        _decks = [];
+        return;
+      }
     }
-    try {
-      _decks = [
-        for (final deck in jsonDecode(raw) as List<dynamic>)
-          Deck.fromJson(deck as Map<String, dynamic>),
-      ];
-    } on Object {
-      _decks = [];
-    }
+    final missing = [
+      for (final bundled in bundledDecks)
+        if (!seeded.contains(bundled.key)) bundled,
+    ];
+    if (raw != null && missing.isEmpty) return;
+    _decks = [..._decks, for (final bundled in missing) bundled.build()];
+    unawaited(
+      _prefs.setStringList(_seededKey, [for (final b in bundledDecks) b.key]),
+    );
+    _commit();
   }
 }
