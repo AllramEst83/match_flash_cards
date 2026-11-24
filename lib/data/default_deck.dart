@@ -10,6 +10,7 @@ typedef BundledDeck = ({String key, Deck Function() build});
 final bundledDecks = <BundledDeck>[
   (key: 'materia', build: _materia),
   (key: 'vasatiden', build: _vasatiden),
+  (key: 'english_words', build: _englishWords),
 ];
 
 Deck _deck(String name, List<(String, String)> cards) => Deck(
@@ -49,6 +50,27 @@ Deck _materia() => _deck('Materia och material', const [
   ),
   ('blandning', 'när det finns fler en ett ämne blandat i något'),
   ('icke-metaller', 'grundämne som inte har metalliska egenskaper'),
+]);
+
+Deck _englishWords() => _deck('Engelska glosor', const [
+  ('towards', 'mot'),
+  ('tiny', 'pyttesmå'),
+  ('moonlight', 'månsken'),
+  ('thousands', 'tusentals'),
+  ('part of', 'del av'),
+  ('endangered', 'hotade'),
+  ('near', 'intill, nära'),
+  ('sea turtle', 'havssköldpadda'),
+  ('ever', 'någonsin'),
+  ('important', 'viktigt'),
+  ("I can't wait!", 'Jag kan inte vänta!'),
+  ('were born', 'föddes'),
+  ('dig', 'gräver'),
+  ('about', 'ungefär'),
+  ('clear', 'klar'),
+  ('is boiling', 'kokar'),
+  ('are beginning', 'börjar'),
+  ('sight', 'syn'),
 ]);
 
 /// Questions 1-26 of the worksheet "Vasatiden - läsning och frågor", answered
